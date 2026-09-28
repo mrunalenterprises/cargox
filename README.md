@@ -25,6 +25,17 @@ Demo functionality:
 
 The demo is **not production security**. `/api/demo/customer-code` reveals OTP without authentication for local testing only. All demo partner approvals are fictional; never put real personal, child, financial or location data into it. No live maps, payment, SMS, real verified KYC, driver tracking or incident service.
 
+The separate `apps/staging-api` now provides a Supabase Auth adapter, narrow onboarding endpoints and database-owned Staff/Admin permissions. Its migration and RLS/HTTP tests run locally against disposable PostgreSQL via PGlite. Hosted Supabase, SMS/captcha, private document storage and trusted verification are **not connected**. See [staging setup, contracts and limitations](docs/STAGING_FOUNDATION.md).
+
+```powershell
+npm --prefix apps/staging-api ci
+npm run test:staging
+```
+
+`npm test` deliberately runs only the existing zero-dependency demo suite; the staging package has its own pinned dependencies and CI job. `scripts/Test-CargoX.ps1` runs both suites before Flutter/Admin checks and Android compilation.
+
+[Visual QA status](docs/VISUAL_QA.md) records the browser permission blocker. The vehicle-art and responsive UI candidate is retained locally, excluded from the verified backend push until screenshot/viewport QA can run.
+
 ## Start locally (Windows PowerShell)
 
 If this repository has already been cloned into an empty `C:\Projects\CargoX` folder:

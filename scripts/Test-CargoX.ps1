@@ -9,6 +9,12 @@ Push-Location $repo
 try {
   Invoke-Checked npm @('run','check:demo')
   Invoke-Checked npm @('test')
+  Push-Location (Join-Path $repo 'apps/staging-api')
+  try {
+    Invoke-Checked npm @('ci')
+    Invoke-Checked npm @('run','check')
+    Invoke-Checked npm @('test')
+  } finally { Pop-Location }
   foreach ($package in @('packages/cargox_demo','packages/cargox_ui','apps/customer','apps/partner')) {
     Push-Location (Join-Path $repo $package)
     try {

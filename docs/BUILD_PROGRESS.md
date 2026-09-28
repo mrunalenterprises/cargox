@@ -4,7 +4,7 @@ Updated: 2026-09-28
 Branch: `feature/passenger-phase1-v1`
 Protocol: update this file **after each batch**; distinguish committed code from verified working features. Do not reset or repeat existing progress.
 
-Current local status: batches E1–E3 completed on this feature branch. Customer/Partner Android scaffolds, service navigation, local Auto/Car journeys and the read-only Admin preview are implemented and locally verified. The production pilot is NOT complete; see the remaining-work section at the end. Earlier batch notes are historical evidence, not the current build status.
+Current local status: E1–E3 remain verified; F2 adds a locally tested staging auth/onboarding/RLS foundation. The F1 asset and responsive UI patch is retained locally, uncommitted pending blocked browser visual QA, so it is excluded from the verified push. The production pilot is NOT complete. The latest results/dependencies are in F1/F2 below; earlier batch notes are historical evidence.
 
 ## Phase 1 scope and non-negotiable constraints
 
@@ -34,7 +34,7 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [x] Next dependency installation, pinned lockfile, TypeScript and production compilation (E2/E3). This compilation is a local preview build, not deployment.
 - [ ] Staging Supabase database migration and RLS integration tests. **Do not deploy migrations to production.**
 
-## Batch C — true pilot (not yet implemented)
+## Batch C — true pilot (foundation started in F2; pilot incomplete)
 
 - [ ] Real OTP/JWT authentication, verified RBAC, Staff then Admin approvals, partner onboarding (documents/police/permit/insurance).
 - [ ] Proper map/geocoding/router pricing, consent-based partner GPS/ETA, secured customer trip sharing and staffed incident/SOS workflow.
@@ -52,7 +52,7 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 ## GitHub review checkpoint
 
 - Draft pull request: https://github.com/mrunalenterprises/cargox/pull/3 (head: `feature/passenger-phase1-v1`; base: `main`). It is **draft**. Do not merge until CI and app builds plus security review succeed.
-- Root npm test script is `node --test` to avoid Windows glob expansion issues.
+- Root npm test uses explicit demo test filenames after F2, avoiding Windows glob expansion and unrelated package dependency discovery.
 
 ## Original remote CI checkpoint (superseded locally by E2/E3 below)
 
@@ -117,7 +117,7 @@ If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, tr
 - Separate final Dart format check: 16 app/shared/adapter source and test files, 0 changes. Phone-sized Home render was rerun successfully and inspected after the final vehicle/route polish. `git diff --check` passed.
 - Local Admin `npm run start` reported Ready and its listener was confirmed on 127.0.0.1:3001; ignored `.env.local` selects 4174. No new browser/HTTP visual inspection was attempted after access denial. API 4174 is seeded with fictional smoke-test rides/draft; old API 4173 remains untouched. These running local processes are not persistent hosted services.
 
-## Remaining work and external blockers after the local demo
+## Remaining work at E3 (foundation progress updated in F2 below)
 
 - Secure pilot backend: real authentication, role/team-scoped authorization, transactional dispatch, persistence, scheduling and tested RLS. The existing SQL is a design migration only. No Docker, PostgreSQL or Supabase CLI is installed here; no staging backend has been configured. Do not expose the local unauthenticated API.
 - Provider/operations dependencies: selected maps/router, SMS, identity/document and fresh-selfie providers; privacy/consent policies; GPS/share protections; incident ownership and staffed SOS; payment sandbox/webhook credentials, refunds and settlement policy. Live activation still requires approval.
@@ -125,3 +125,25 @@ If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, tr
 - Implementation backlog beyond the local preview: full Hindi/Marathi translations, real notifications, production trip tracking/support, atomic paid entitlements and renewal, production Outstation/Shared/Bike flows. These are not claimed complete or merely hidden behind working integrations.
 - Verification still required: Admin browser visual QA, physical Android performance/accessibility walkthrough, release signing, iOS/macOS builds on supported tooling, staging integration/security/load tests and the expanded remote CI run. Windows desktop compilation is unsupported without Visual Studio C++.
 - Next development batch: provision an approved isolated staging backend and implement the authenticated Auto/Car vertical slice with transactional acceptance and negative RBAC/RLS tests. Resolve the policy/provider decisions above before activating dependent services. Do not recreate completed local navigation or the reviewed Node demo.
+
+## Batch F1 — synchronization audit and local UI candidate (2026-09-28; browser QA blocked)
+
+- Read the complete master prompt and this progress log. Started from verified local commit `e6091ac` on `feature/passenger-phase1-v1`. `git fetch origin` succeeded: 3 local commits ahead, 0 behind; no tracked local modifications and no divergence. No reset, clean, rebase or force push was used.
+- Inventoried and SHA-256 hashed 42 pre-existing untracked files under `apps/customer_app`, `apps/partner_app` and `functions`; their hashes remain unchanged. Ignored legacy artifacts were left in place. Audit manifest is local-only `.artifacts/pre-f4-untracked-audit.json`.
+- Replaced the remaining web vehicle emoji glyphs with five original glossy SVGs and a deterministic generator. Existing Flutter vector artwork and booking flows were preserved. Added allowlisted SVG routes and verified MIME/404 responses through the actual demo HTTP server. Asset contact sheet rasterized with Sharp and visually inspected; no browser rendering was used for that inspection.
+- Source-level UI corrections: narrow header/form/grid wrapping, higher-contrast captions/unavailable states, focusable Admin skip target, responsive Admin metrics and reduced-motion hover suppression. See `docs/VEHICLE_ASSETS.md` and `docs/VISUAL_QA.md`.
+- To honor “commit and push only verified changes,” these browser-facing changes stay **uncommitted locally** until screenshot/viewport QA can run. This includes Admin CSS/layout, demo HTML/CSS/JS/server SVG routes, asset-serving assertions in `tests/api.test.mjs`, the SVGs/generator, the vehicle-art document and its README note. Do not discard or recreate them. Only the independent, tested backend foundation is being committed/pushed in this continuation.
+- Browser QA is still BLOCKED. Opening local Admin in the browser tool was rejected by the saved user permission. The user said they would enable access; one recheck returned the same saved-permission rejection. No alternate browser, raw browser commands or screenshot workaround was used. No browser screenshots or responsive-viewport pass is claimed.
+- PASSED: `.\scripts\Test-CargoX.ps1 -SkipAndroid` exited 0: demo syntax and 23/23 Node tests; staging 26/26; all four Flutter analyses clean and adapter 2/2, UI 8/8, Customer 7/7, Partner 3/3 (20 total); Next type generation/TypeScript, all 11 section checks and build. Admin/staging installs both reported 0 vulnerabilities. Live Dart API smoke and optional Flutter render 1/1 passed separately.
+- Android rerun attempt 1: Customer integration APK built/installed, then the emulator disappeared during the running test. Flutter exited 1: `device 'emulator-5554' not found`, followed by listener-directory cleanup errors. No app assertion pass/fail was produced. Windows Application Event 1000 identified `qemu-system-x86_64-headless.exe` crashing at 23:41:46 with exception `0xc0000005`, unknown faulting module. Retried with a fresh read-only emulator/two cores; requested 2048 MB, but the Android image enforced 4096 MB. Customer retry PASSED 1/1 in 56s. The first Partner retry then failed before UI interaction with `HttpException: Connection closed before full header was received`; diagnosis showed only our disposable 4174 API had stopped, while the preserved 4173 process remained healthy. Restarted only 4174, reapplied `adb reverse`, and Partner PASSED 1/1 in 12s. Normal APK rebuilds remain pending.
+- Preserved the older API on 4173. Saved our fictional 4174 state to `.artifacts/f1-api-before-refresh.json` before restarting only that process with current SVG routes. Test fixture state is ephemeral; do not use the old process for new asset QA.
+
+## Batch F2 — separate staging identity and onboarding foundation (2026-09-28)
+
+- Added `apps/staging-api` with pinned Supabase client, a real provider OTP request/verification adapter, per-request `getUser` verification, same-user JWT database calls, narrow field validation, body/time limits, process-local rate limits and private error responses. It never uses a service-role client or the demo engine. No app was switched to staging.
+- Added an additive transactional SQL migration for customer consent, partner application/document-reference collection, protected staff roles/FO teams, MFA-gated scoped reads/reviews, required Staff then independent Admin approval, current trusted-verification checks and append-only audit. Approval cannot put a partner online or enable a service. The original domain migration is unchanged.
+- PASSED: 26/26 staging tests: 15 PostgreSQL migration/RLS tests, 8 HTTP integration tests and 3 adapter/config tests. Both actual migration files were executed in disposable PostgreSQL 18.3 / PGlite 0.5.8 (wasm32) with pgcrypto and a minimal test-only Supabase auth contract. Ephemeral signed JWT fixtures test HTTP identity rejection. These are not hosted Supabase/Auth/PostgREST/Storage integration results.
+- Refined the auth outage path to return 503 without exposing provider details, instead of misreporting an outage as an invalid session. Re-ran staging syntax and all 26 tests successfully after this final server change.
+- `npm ci` for staging reported 0 vulnerabilities. `npm run check` passed. `npm start` without configuration intentionally exited 1 with `CARGOX_ENV=staging is required; demo fallback is forbidden`. No external auth provider call, real SMS, hosted migration, deployment or payment occurred.
+- Added `docs/STAGING_FOUNDATION.md` with exact setup, routes, primary documentation links, threat boundaries and remaining dependencies. Expanded the verifier and CI with a separate staging suite. Root `npm test` explicitly runs the original two demo test files so unrelated package dependencies cannot contaminate the zero-dependency demo job.
+- Still pending: approved isolated Supabase project/configuration; hosted migration review and real JWT/PostgREST RLS tests; SMS/captcha and staff MFA; audited operator bootstrap; private Storage, scanning/retention and trusted verification; refresh/sign-out and staged app adapters; native PostgreSQL concurrency/security/load checks. PGlite is local database evidence, not a replacement for those integrations.
