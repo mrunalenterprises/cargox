@@ -27,7 +27,7 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [x] `apps/partner`: Flutter fake partner offers / accept / start OTP / complete source.
 - [x] `apps/admin`: Next.js read-only local Admin status preview source.
 - [x] `supabase/migrations/20260928000100_cargox_phase1_schema.sql`: default-deny RLS **design migration, not deployed**.
-- [ ] **Node test verification:** code and tests committed, but a full actual Node/GitHub Actions run is required. Earlier non-Node in-isolate logic check was 14/14 with fake crypto; that is **not** equivalent to runtime test success. On 2026-09-28 the current domain, demo server, browser JS, domain tests and API tests all passed **syntax parsing in an isolated JavaScript runtime after stripping module syntax/import.meta**; exact real Node CI status still unverified.
+- [x] **Node demo verification:** [GitHub Actions run 36433401322](https://github.com/mrunalenterprises/cargox/actions/runs/36433401322) completed successfully on 2026-09-28: JS source checks succeeded, **19/19 real Node domain and HTTP API tests passed**, 0 failures. This verifies the in-memory demo functions tested there, **not** Flutter/Next builds or production security. Additional Flutter UI widget tests have been committed but not run yet.
 - [ ] Flutter SDK project platform files, actual `flutter analyze`, `flutter test` and Android device build. Local Flutter install needed.
 - [ ] Next `npm install`, `tsc` typecheck and `next build`; pin actual resolved patched versions/lockfile after install.
 - [ ] Staging Supabase database migration and RLS integration tests. **Do not deploy migrations to production.**
@@ -54,13 +54,13 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 
 ## Tests and status (do not embellish)
 
-- The source and test suite have been written to GitHub on feature branch. `npm test`, `npm run check:demo`, Flutter analysis and Next build have **not** yet been verified in the actual Node/SDK environment at the time this record was authored.
+- GitHub Actions verified `npm run check:demo` and `npm test` passed (19 tests) on [run 36433401322](https://github.com/mrunalenterprises/cargox/actions/runs/36433401322). Flutter analysis/widget tests, Next dependency installation/typecheck/build and physical device UI smoke tests remain **unverified**.
 - If CI is green later, add run URL and date. If it fails, record the exact error and fix in this branch.
 - The local demo is in-memory, unauthenticated and binds to 127.0.0.1; it must not be deployed.
 
 ## Next exact developer action
 
-Run CI / tests on feature branch, correct any failures. On Windows after fetching and safely switching to the branch:
+Run the local visual/interactive walkthrough, Flutter UI tests and Next build; fix any failures. On Windows after fetching and safely switching to the branch:
 
 ```powershell
 cd C:\Projects\CargoX
