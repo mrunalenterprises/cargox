@@ -186,3 +186,34 @@ First pilot city and selected licensed vehicle types; exact tariff and local per
 
 ## 8. Test coverage / release blockers
 Real tests: city OFF or missing legal gate refuses booking; partner rejects invalid documents/selfie; Driver cannot have overlapping rides or duplicate offers; Pink Only and women-only full-party NEVER silently fall back; 4-digit trip start code rate-limited, short lived and single use; every return leg separate; weekday/holiday/month boundary correct; purchased quote immutability; expired seat hold releases and cannot overbook; payment/refund webhooks idempotent; guardian profile and location cross-user isolation; notifications/reassignment work on real devices; no fake supported payment or staffed SOS; no old credentials or test child PII.
+
+
+## 9. LOCKED visual system and automatic Pink Rider theme (2026-09-28)
+**Preserve the Customer and Partner visual colour combination already shown to the owner, without redesign.** The regular baseline uses deep forest green `#102F27`, white `#FFFFFF`, soft green accents and white content cards. Pink Rider mode uses rich pink `#A82965`, light pink `#FFF4F8` and white. Apply the same visual language to the appropriate Driver Partner UI as well as Customer UI; avoid copying competitors' visual assets.
+
+### State-driven theme contract
+| Event/state | Customer root app theme | Assigned Partner root app theme |
+| --- | --- | --- |
+| No Pink ride selected or active | REGULAR green | REGULAR green |
+| Customer explicitly chooses Pink Rider and initiates its booking | PINK immediately, even while searching (label 'Finding eligible Pink Rider') | Unchanged unless dealing with an accepted Pink trip |
+| Partner opts into Pink Rider availability but has no accepted Pink trip | n/a | REGULAR green with visible Pink availability badge, not an all-pink app |
+| Eligible partner receives a Pink request | Customer remains PINK | Pink-styled offer card to distinguish request; root stays REGULAR until partner accepts |
+| Eligible Pink ride accepted / rider en route / rider arrived / OTP / trip live | PINK until terminal booking state | PINK for the assigned partner's active Pink trip |
+| Pink rider unavailable, customer exits/cancels, booking fails/expires | REGULAR once the Pink request is no longer active | REGULAR if no accepted Pink trip |
+| Pink ride completed or cancelled by either side | REGULAR immediately after authoritative terminal state | REGULAR immediately after authoritative terminal state |
+| App killed/reopened, reconnect or switching tabs with active Pink ride | Restore PINK from current authenticated server booking state | Restore PINK from assigned active Pink trip |
+
+Do not confuse pink visual styling with verification or confirmed assignment. Explicit text must differentiate Pink REQUESTED, SEARCHING, ACCEPTED, DRIVER ARRIVED, ACTIVE, COMPLETE and NO DRIVER AVAILABLE. For a cancellation or no eligible driver, offer a **fresh informed choice**; Pink Only must never silently fall back to an unverified/non-Pink driver. In a multi-booking/fleet view, drive root app theme from the user's *current focused or ongoing personal booking* and use per-booking visual badges for all other simultaneous tasks. Do not make theme switches based solely on location changes, navigation events, cached preference, gender inference or Pink opt-in status.
+
+Implement `AppThemeMode { regular, pinkRide }` with central theme tokens and state derived from the authoritative booking lifecycle and typed booking preference. Customer starts Pink at explicit Pink booking request; Partner starts root Pink only upon assignment/acceptance of an eligible Pink ride. Transition back on terminal booking state; render defaults safely offline and reconcile stale events on rejoin. If the app is launched while offline with last-known Pink active booking, show clearly marked offline/unverified last-known status without claiming a current assigned driver. Never store sensitive woman-driver proof in theming layer.
+
+Other semantic colors must remain consistent across themes: **red SOS/emergency**, text-labeled Green Available/Orange Selected/Red Booked/Grey Blocked/Pink Women Only shared-seat states, and map/route indicators must meet accessibility contrast and work without color alone. White background/card hierarchy and buttons stay familiar; provide subtle accessible transition, no distracting full-screen animation during navigation or emergencies. Persist user language and regular visual preferences independently of per-ride theme.
+
+### Theme regression acceptance tests
+1. Default Customer and Partner app home renders original Green/White tokens.
+2. Pink Only selection followed by booking request changes Customer full app theme Pink; status remains 'searching' until eligible driver assigned.
+3. Partner merely turning on Pink availability **does not** turn the entire Partner app pink. Incoming Pink offer gets Pink card; accepted Pink offer changes Partner active app to Pink.
+4. Accepted Pink ride, trip OTP, tracking and SOS preserve themed UI with legible emergency elements for both sides.
+5. Complete, cancel, expire and no-driver-available result in Customer theme reset; completion/cancellation resets relevant Partner theme. Never silently assign normal driver.
+6. App restart/reconnect rehydrates Pink only when verified authoritative booking state is still active, and does not flash obsolete Pink theme as new booking state settles.
+7. Monthly and Daily Pink ride occurrences switch Pink only for the current chosen/requested/assigned Pink occurrence, not for the lifetime of the entire monthly package.
