@@ -82,3 +82,18 @@ test('unpaid pack listing preserves Pink and separate legs without dispatch',asy
  assert.deepEqual(plan.legs.map(l=>l.leg),['outbound','return','outbound','return']);
  assert.equal((await read('/api/rides')).data.length,before.data.length);
 });
+
+test('Admin exposes fictional audit/pricing without mutation or OTP secrets',async()=>{
+ const {data}=await read('/api/admin');
+ assert.equal(data.demo,true);
+ assert.equal(data.pricing.commissionBps,2500);
+ assert.equal(data.pricing.ratePaisePerKm.auto,1700);
+ assert.equal(data.audit.length,data.auditCount);
+ assert.deepEqual(data.audit.map(e=>e.sequence),data.audit.map((_,i)=>i+1));
+ for(const ride of data.rides) {
+  for(const field of ['code','hash','salt','attempts']) assert.equal(Object.hasOwn(ride,field),false);
+ }
+ const mutation=await post('/api/admin',{services:{bike:true},commissionBps:0});
+ assert.equal(mutation.status,404);
+ assert.equal((await read('/api/admin')).data.cities[0].services.bike,false);
+});

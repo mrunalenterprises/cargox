@@ -166,5 +166,7 @@ export class RideEngine {
   }
   adminSummary() {return {demo:true,cities:[...this.cities.values()],partners:[...this.partners.values()],
     rides:[...this.rides.values()].map(publicRide),plans:[...this.plans.values()],
-    auditCount:this.audit.length,alert:"Not a live admin dashboard. No real authentication, permits, dispatch or payments."};}
+    auditCount:this.audit.length,audit:this.audit.map((event,index)=>({sequence:index+1,...event})),
+    pricing:{ratePaisePerKm:{...this.ratePaisePerKm},commissionBps:this.commissionBps},
+    alert:"Not a live admin dashboard. No real authentication, permits, dispatch or payments."};}
 }

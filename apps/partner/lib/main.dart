@@ -28,8 +28,7 @@ class PartnerEntry extends StatelessWidget {
             text:
                 'Demo sign-in • SMS OTP and live registration are not connected. Choose a fictional driver fixture to test rides.'),
         FilledButton(
-            onPressed: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => PartnerHome(api: api))),
+            onPressed: () => replaceCargoX(context, PartnerHome(api: api)),
             child: const Text('Enter partner demo')),
         for (final role in [
           'Individual Driver / Rider',

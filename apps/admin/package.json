@@ -6,7 +6,8 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3001",
     "build": "next build",
     "typecheck": "next typegen && tsc --noEmit",
-    "start": "next start --hostname 127.0.0.1 --port 3001"
+    "start": "next start --hostname 127.0.0.1 --port 3001",
+    "check:sections": "node scripts/check-sections.cjs"
   },
   "dependencies": {
     "next": "16.3.6",

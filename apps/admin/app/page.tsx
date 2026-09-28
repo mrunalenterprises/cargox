@@ -1,18 +1,5 @@
-export const dynamic = "force-dynamic";
-type Ride = { id: string; state: string; service: string; pickup: string; drop: string; partnerId?: string | null; };
-type Partner = { id: string; name: string; approved: boolean; pinkOptIn: boolean; };
-type City = { id: string; name: string; services: Record<string, boolean>; };
-type Dashboard = { demo: true; cities: City[]; partners: Partner[]; rides: Ride[]; plans: unknown[]; auditCount: number; alert: string; };
-async function snapshot(): Promise<Dashboard | null> {
-  try {
-    // Server-only loopback fetch. Do not add an unauthenticated public proxy.
-    const origin = new URL(process.env.CARGOX_DEMO_API ?? "http://127.0.0.1:4173");
-    if (origin.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(origin.hostname) || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== "/") return null;
-    const res = await fetch(new URL("/api/admin", origin), { cache: "no-store", signal: AbortSignal.timeout(2500) });
-    if (!res.ok) return null;
-    return await res.json() as Dashboard;
-  } catch { return null; }
-}
+import { snapshot } from '../lib/demo';
+export const dynamic = 'force-dynamic';
 export default async function AdminHome() {
   const data = await snapshot();
   const metrics = data ? [

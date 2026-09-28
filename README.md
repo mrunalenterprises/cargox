@@ -111,6 +111,8 @@ Open `http://127.0.0.1:3001`. Both `dev` and `start` bind to loopback. `npm run 
 ```powershell
 cd C:\Projects\CargoX
 .\scripts\Test-CargoX.ps1
+# Use this session's isolated API for the final APKs:
+.\scripts\Test-CargoX.ps1 -DemoApi http://127.0.0.1:4174
 # Omit Android compilation on hosts without the SDK:
 .\scripts\Test-CargoX.ps1 -SkipAndroid
 ```
@@ -119,6 +121,29 @@ The script fails at the first failed check. On this Windows host the JDK initial
 
 - `apps/customer/build/app/outputs/flutter-apk/app-debug.apk`
 - `apps/partner/build/app/outputs/flutter-apk/app-debug.apk`
+
+The final E3 APKs were rebuilt with `CARGOX_DEMO_API=http://127.0.0.1:4174` after both emulator integration tests passed. They contain the normal app entrypoints. Keep the isolated API running and configure `adb reverse tcp:4174 tcp:4174` for each connected Android test device. Full results and production blockers are in `docs/BUILD_PROGRESS.md`.
+
+Admin also provides read-only navigation for login/access, city/service controls, partner review, dispatch/incidents, fares, Pink permissions, recurring plans, GM/FO reports, payouts, audit and launch flags. `npm run check:sections` renders all 11 server components against fictional fixtures and checks invalid routes, offline responses and API-origin guards. It does not replace browser visual QA.
+
+### Android integration checks
+
+Use a dedicated local fixture API with no concurrent manual bookings. Start an installed emulator or connect an authorized test device, then:
+
+```powershell
+cd C:\Projects\CargoX
+& C:\Android\Sdk\platform-tools\adb.exe devices -l
+& C:\Android\Sdk\platform-tools\adb.exe -s emulator-5554 reverse tcp:4174 tcp:4174
+$env:JAVA_TOOL_OPTIONS='-Djdk.net.unixdomain.tmpdir=C:/Projects/CargoX/.local-tmp'
+cd apps\customer
+flutter test integration_test/local_journey_test.dart -d emulator-5554 --dart-define=CARGOX_DEMO_API=http://127.0.0.1:4174
+cd ..\partner
+flutter test integration_test/local_journey_test.dart -d emulator-5554 --dart-define=CARGOX_DEMO_API=http://127.0.0.1:4174
+```
+
+Substitute the connected device ID. These tests create fictional local rides; Customer tests simulate Partner API actions and Partner tests simulate Customer API actions. They do not verify SMS, maps, real identity, payment or physical-device performance. See BUILD_PROGRESS for actual run results. Run `flutter build apk --debug` again after integration testing to produce normal app APKs instead of test-entry APKs.
+
+The CI workflow retains Node tests and adds Flutter analysis/widget-test jobs at the verified SDK revision plus pinned Admin typecheck/component/build checks. No new remote CI result is claimed until a pushed run completes.
 
 Optional Windows phone-sized UI rendering: from `apps/customer`, run `flutter test tool/render_preview_test.dart`. It uses the locally installed Segoe UI font without redistributing it and writes PNGs under ignored `.artifacts/`. This is a render-inspection task, not a physical-device benchmark.
 

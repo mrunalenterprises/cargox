@@ -80,9 +80,8 @@ class _WelcomePageState extends State<WelcomePage> {
               title: Text('Chhatrapati Sambhajinagar'),
               subtitle: Text('Auto & Car • fictional local pilot')),
           FilledButton(
-              onPressed: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                      builder: (_) => CustomerHome(api: widget.api))),
+              onPressed: () =>
+                  replaceCargoX(context, CustomerHome(api: widget.api)),
               child: const Text('Explore CargoX')),
         ],
       ]);

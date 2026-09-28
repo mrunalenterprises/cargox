@@ -19,23 +19,28 @@ bool reducedMotion(BuildContext context) {
 }
 
 Future<T?> openCargoX<T>(BuildContext context, Widget page) =>
-    Navigator.of(context).push<T>(
-      PageRouteBuilder<T>(
-        transitionDuration: reducedMotion(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 210),
-        reverseTransitionDuration: reducedMotion(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 170),
-        pageBuilder: (_, animation, secondaryAnimation) => page,
-        transitionsBuilder: (_, animation, secondaryAnimation, child) =>
-            FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                    position: animation.drive(
-                        Tween(begin: const Offset(.025, 0), end: Offset.zero)),
-                    child: child)),
-      ),
+    Navigator.of(context).push<T>(cargoXRoute<T>(context, page));
+
+Future<T?> replaceCargoX<T>(BuildContext context, Widget page) =>
+    Navigator.of(context)
+        .pushReplacement<T, void>(cargoXRoute<T>(context, page));
+
+PageRouteBuilder<T> cargoXRoute<T>(BuildContext context, Widget page) =>
+    PageRouteBuilder<T>(
+      transitionDuration: reducedMotion(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 210),
+      reverseTransitionDuration: reducedMotion(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 170),
+      pageBuilder: (_, animation, secondaryAnimation) => page,
+      transitionsBuilder: (_, animation, secondaryAnimation, child) =>
+          FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                  position: animation.drive(
+                      Tween(begin: const Offset(.025, 0), end: Offset.zero)),
+                  child: child)),
     );
 
 ThemeData cargoxTheme() => ThemeData(

@@ -4,6 +4,8 @@ Updated: 2026-09-28
 Branch: `feature/passenger-phase1-v1`
 Protocol: update this file **after each batch**; distinguish committed code from verified working features. Do not reset or repeat existing progress.
 
+Current local status: batches E1–E3 completed on this feature branch. Customer/Partner Android scaffolds, service navigation, local Auto/Car journeys and the read-only Admin preview are implemented and locally verified. The production pilot is NOT complete; see the remaining-work section at the end. Earlier batch notes are historical evidence, not the current build status.
+
 ## Phase 1 scope and non-negotiable constraints
 
 Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation incl Daily Car, Shared Car; Pink Rider preferences; Schedule, Daily and Monthly fixed-route packs. Phase 2 goods logistics deferred. Mint #59BAA1 glossy, smooth, accessible UI. Sensitive service and legal claims remain launch-gated.
@@ -13,7 +15,7 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [x] Verified `main` had master build prompt and minimal README; created separate feature branch and did not modify `main`.
 - [x] `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SCREENS.md` added with explicit unresolved policy questions.
 - [x] Added scope/limitations and Windows developer instructions to `README.md`.
-- [ ] Verify the complete master prompt's versions with installed stable SDKs on developer laptop.
+- [x] Verify installed SDK versions on developer laptop (batch E1; resolved app builds in E2/E3).
 - [ ] Confirm first live city, regulator-approved service types, pooling model and operational policies.
 
 ## Batch B — runnable demo/domain, UI shells and initial schema
@@ -28,8 +30,8 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [x] `apps/admin`: Next.js read-only local Admin status preview source.
 - [x] `supabase/migrations/20260928000100_cargox_phase1_schema.sql`: default-deny RLS **design migration, not deployed**.
 - [x] **Node demo verification:** [GitHub Actions run 36433401322](https://github.com/mrunalenterprises/cargox/actions/runs/36433401322) completed successfully on 2026-09-28: JS source checks succeeded, **19/19 real Node domain and HTTP API tests passed**, 0 failures. This verifies the in-memory demo functions tested there, **not** Flutter/Next builds or production security. Additional Flutter UI widget tests have been committed but not run yet.
-- [ ] Flutter SDK project platform files, actual `flutter analyze`, `flutter test` and Android device build. Local Flutter install needed.
-- [ ] Next `npm install`, `tsc` typecheck and `next build`; pin actual resolved patched versions/lockfile after install.
+- [x] Flutter SDK project platform files, analysis, widget tests and Android debug builds (E1/E2); Android emulator integration journeys (E3).
+- [x] Next dependency installation, pinned lockfile, TypeScript and production compilation (E2/E3). This compilation is a local preview build, not deployment.
 - [ ] Staging Supabase database migration and RLS integration tests. **Do not deploy migrations to production.**
 
 ## Batch C — true pilot (not yet implemented)
@@ -52,13 +54,13 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - Draft pull request: https://github.com/mrunalenterprises/cargox/pull/3 (head: `feature/passenger-phase1-v1`; base: `main`). It is **draft**. Do not merge until CI and app builds plus security review succeed.
 - Root npm test script is `node --test` to avoid Windows glob expansion issues.
 
-## Tests and status (do not embellish)
+## Original remote CI checkpoint (superseded locally by E2/E3 below)
 
-- GitHub Actions verified `npm run check:demo` and `npm test` passed (19 tests) on [run 36433401322](https://github.com/mrunalenterprises/cargox/actions/runs/36433401322). Flutter analysis/widget tests, Next dependency installation/typecheck/build and physical device UI smoke tests remain **unverified**.
+- GitHub Actions verified `npm run check:demo` and `npm test` passed (19 tests) on [run 36433401322](https://github.com/mrunalenterprises/cargox/actions/runs/36433401322). This is the original remote result. Later local Flutter, Android and Next results are recorded in E2/E3; physical-device performance remains unverified.
 - If CI is green later, add run URL and date. If it fails, record the exact error and fix in this branch.
 - The local demo is in-memory, unauthenticated and binds to 127.0.0.1; it must not be deployed.
 
-## Next exact developer action
+## Historical handoff before E1 (completed; do not repeat)
 
 Run the local visual/interactive walkthrough, Flutter UI tests and Next build; fix any failures. On Windows after fetching and safely switching to the branch:
 
@@ -101,3 +103,25 @@ If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, tr
 - Admin lockfile generated, dev/start restricted to 127.0.0.1:3001, configurable loopback API with 2.5s timeout. Ignored .env.local selects 4174. Earlier preview HTTP 200 verified. Browser permission DENIED visual inspection; not bypassed. Admin browser visual QA is unverified.
 - Remaining: device walkthrough/performance, full translations, real auth/RBAC/maps/GPS/KYC/selfie/SOS, legal approvals, paid entitlements/refunds/settlement and staging RLS. No deployment, production migrations, real payments or live gates activated.
 - Next batch: close route-motion/scaffold polish gaps and CI/handoff. Do not recreate the completed demo features above.
+
+## Batch E3 — Admin navigation, Android integration and verification handoff (2026-09-28)
+
+- Added all 11 read-only Admin sections: login/access, city/service switches, partner review, dispatch/incidents, fares, Pink permissions, Daily/Monthly oversight, GM/FO reports, payouts, audit and launch flags. The local API exposes illustrative pricing and sequenced fixture events without OTP secrets. No approval or payment mutation is enabled.
+- Centralized Flutter replacement-route motion so entry transitions also honor both OS reduced-motion signals. Added original mint vector launcher icons and readable CargoX/CargoX Partner Android labels.
+- Android emulator tests PASSED independently on Pixel_9 / Android 17 / emulator-5554: Customer 1/1 (UI request, assigned code and receipt with live local HTTP; counterpart Partner API actions simulated), Partner 1/1 (UI accept, server OTP/start and complete; counterpart Customer API actions simulated). This is emulator evidence, not a physical-device or two-app simultaneous session.
+- Initial Customer integration attempt was interrupted during cold emulator startup/first native dependency resolution; its retry passed. Partner passed. The test emulator was shut down after both checks. Fictional API state was saved to ignored `.artifacts/e3-emulator-api-state.json` before refreshing only our isolated 4174 process. The user's older 4173 process and reviewed web assets were preserved.
+- Live Dart HTTP smoke PASSED again after the API refresh: immediate Auto, scheduled Pink Car and unpaid four-leg Pink plan. Fixture data is in-memory and resets on server restart.
+- Admin server-component checks PASSED for all 11 sections, unknown-route rejection, offline state, disallowed API origins and non-demo responses. Browser visual inspection remains unverified because browser access was denied; no alternative browser was used.
+- Added documented API contracts and repeatable Android integration commands. CI now defines per-package Flutter analysis/tests and Admin typecheck/component/build jobs in addition to Node. New remote CI jobs are NOT verified: these commits have not been pushed.
+- Final `.\scripts\Test-CargoX.ps1 -DemoApi http://127.0.0.1:4174` EXIT 0: Node syntax checks and 23/23 regressions; all four Flutter package analyses reported no issues; adapter 2/2, shared UI 8/8, Customer 7/7 and Partner 3/3 host tests (20 total); `npm ci` reported 0 vulnerabilities; Next type generation/TypeScript, all 11 section checks and Next build passed; BOTH normal Android debug APKs rebuilt after integration testing (Customer 45.2s, Partner 43.2s). These APKs target the isolated loopback API on 4174 and require `adb reverse tcp:4174 tcp:4174` on an Android test device.
+- Separate final Dart format check: 16 app/shared/adapter source and test files, 0 changes. Phone-sized Home render was rerun successfully and inspected after the final vehicle/route polish. `git diff --check` passed.
+- Local Admin `npm run start` reported Ready and its listener was confirmed on 127.0.0.1:3001; ignored `.env.local` selects 4174. No new browser/HTTP visual inspection was attempted after access denial. API 4174 is seeded with fictional smoke-test rides/draft; old API 4173 remains untouched. These running local processes are not persistent hosted services.
+
+## Remaining work and external blockers after the local demo
+
+- Secure pilot backend: real authentication, role/team-scoped authorization, transactional dispatch, persistence, scheduling and tested RLS. The existing SQL is a design migration only. No Docker, PostgreSQL or Supabase CLI is installed here; no staging backend has been configured. Do not expose the local unauthenticated API.
+- Provider/operations dependencies: selected maps/router, SMS, identity/document and fresh-selfie providers; privacy/consent policies; GPS/share protections; incident ownership and staffed SOS; payment sandbox/webhook credentials, refunds and settlement policy. Live activation still requires approval.
+- Service policy decisions: city and route permissions, Bike/Shared operating model, approved child handoff process, real tariffs/taxes, pack holidays/pauses/refunds and qualified replacements. Strict Pink preference must survive every replacement.
+- Implementation backlog beyond the local preview: full Hindi/Marathi translations, real notifications, production trip tracking/support, atomic paid entitlements and renewal, production Outstation/Shared/Bike flows. These are not claimed complete or merely hidden behind working integrations.
+- Verification still required: Admin browser visual QA, physical Android performance/accessibility walkthrough, release signing, iOS/macOS builds on supported tooling, staging integration/security/load tests and the expanded remote CI run. Windows desktop compilation is unsupported without Visual Studio C++.
+- Next development batch: provision an approved isolated staging backend and implement the authenticated Auto/Car vertical slice with transactional acceptance and negative RBAC/RLS tests. Resolve the policy/provider decisions above before activating dependent services. Do not recreate completed local navigation or the reviewed Node demo.

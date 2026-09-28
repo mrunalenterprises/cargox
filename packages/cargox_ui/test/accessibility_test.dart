@@ -44,6 +44,24 @@ void main() {
         ModalRoute.of(tester.element(find.text('Next screen'))) as PageRoute;
     expect(route.transitionDuration, Duration.zero);
   });
+
+  testWidgets('accessible navigation removes replacement-route motion',
+      (tester) async {
+    late BuildContext pageContext;
+    await tester.pumpWidget(MaterialApp(
+        home: MediaQuery(
+      data: const MediaQueryData(accessibleNavigation: true),
+      child: Builder(builder: (context) {
+        pageContext = context;
+        return const Scaffold(body: Text('Entry'));
+      }),
+    )));
+    replaceCargoX(pageContext, const Scaffold(body: Text('Home')));
+    await tester.pumpAndSettle();
+    final route = ModalRoute.of(tester.element(find.text('Home'))) as PageRoute;
+    expect(route.transitionDuration, Duration.zero);
+    expect(find.text('Entry'), findsNothing);
+  });
   testWidgets('large text vehicle cards retain usable labels and hit target',
       (tester) async {
     await tester.pumpWidget(MaterialApp(

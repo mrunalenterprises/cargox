@@ -1,4 +1,4 @@
-param([switch]$SkipAndroid)
+param([switch]$SkipAndroid, [string]$DemoApi = 'http://127.0.0.1:4173')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot
 function Invoke-Checked([string]$Tool, [string[]]$Arguments) {
@@ -21,6 +21,7 @@ try {
   try {
     Invoke-Checked npm @('ci')
     Invoke-Checked npm @('run','typecheck')
+    Invoke-Checked npm @('run','check:sections')
     Invoke-Checked npm @('run','build')
   } finally { Pop-Location }
   if (-not $SkipAndroid) {
@@ -32,7 +33,7 @@ try {
       $env:JAVA_TOOL_OPTIONS = ($previousJavaOptions + ' -Djdk.net.unixdomain.tmpdir="' + $socketDir + '"').Trim()
       foreach ($app in @('customer','partner')) {
         Push-Location (Join-Path $repo "apps/$app")
-        try { Invoke-Checked flutter @('build','apk','--debug') }
+        try { Invoke-Checked flutter @('build','apk','--debug',"--dart-define=CARGOX_DEMO_API=$DemoApi") }
         finally { Pop-Location }
       }
     } finally { $env:JAVA_TOOL_OPTIONS = $previousJavaOptions }
