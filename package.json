@@ -1,0 +1,13 @@
+{
+  "name": "cargox-workspace",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "CargoX Phase 1 passenger mobility clean start. Node demo is not a live ride platform.",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "dev:demo": "node apps/demo/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:demo": "node --check packages/cargox_domain/src/index.mjs && node --check apps/demo/server.mjs && node --check apps/demo/public/app.js"
+  }
+}
