@@ -11,3 +11,7 @@ dependencies:
     path: ../../packages/cargox_ui
 flutter:
   uses-material-design: true
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

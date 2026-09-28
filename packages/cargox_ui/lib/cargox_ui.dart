@@ -93,7 +93,7 @@ class _CargoXServiceCardState extends State<CargoXServiceCard> {
                     color: widget.selected ? accent : const Color(0xFFD6EDE2),
                     width: widget.selected ? 2 : 1),
                 boxShadow: [
-                  BoxShadow(color: CargoXColors.deep.withOpacity(.12),
+                  BoxShadow(color: CargoXColors.deep.withValues(alpha: .12),
                       blurRadius: widget.selected ? 22 : 14,
                       offset: const Offset(0, 7))
                 ],

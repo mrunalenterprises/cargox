@@ -110,7 +110,7 @@ class _PartnerHomeState extends State<PartnerHome> {
                   style:TextStyle(color:CargoXColors.pink,fontWeight:FontWeight.bold)),
               FilledButton(onPressed:()=>act('accept',ride['id'].toString()),
                   child:const Text('Accept demo offer'))
-          ]))));
+          ])));
       }),
       const SizedBox(height:18),
       const Text('Manage accepted ride',style:TextStyle(

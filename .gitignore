@@ -1,0 +1,10 @@
+**/.dart_tool/
+**/build/
+**/.idea/
+**/*.iml
+**/node_modules/
+**/.next/
+**/*.tsbuildinfo
+**/.env.local
+**/.flutter-plugins-dependencies
+*.log

@@ -74,3 +74,15 @@ npm run dev:demo
 ```
 
 If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, try the Customer -> Partner -> OTP -> Admin happy path. Preserve any local modifications before switching. Then install Flutter/Next SDK dependencies and continue unfinished tasks; never implement these same demo files again just to show activity.
+
+## Batch E1 — canonical Flutter scaffolds and installed tooling (2026-09-28)
+
+- Read both governing documents in full; continued feature/passenger-phase1-v1. The manually reviewed Node web demo was preserved.
+- Generated Android scaffolds only in apps/customer and apps/partner using Flutter 3.47.0 / Dart 3.13.0. Added flutter_test dependencies and lockfiles, app smoke tests, analysis configuration and debug-only cleartext HTTP for the loopback demo.
+- Corrected an existing extra closing parenthesis in Partner offers and deprecated Flutter UI APIs.
+- Installed tooling: Android SDK 37.0.0 at C:\Android\Sdk; Java Temurin 21.0.12; licenses accepted; Node 24.19.0; npm 11.17.0. No Android device connected. Visual Studio C++ absent; Windows desktop builds unsupported here.
+- PASSED: flutter analyze in each Customer, Partner and cargox_ui package (no issues); Customer 1/1, Partner 1/1, UI 4/4 widget tests. npm run check:demo and npm test passed locally: 19/19.
+- FAILED: Customer flutter build apk --debug: Gradle java.io.IOException: Unable to establish loopback connection before compilation. Investigation continues; no APK claimed.
+- An accidental repository-root flutter analyze traversed untracked functions/node_modules Firebase templates and an unresolved new package; root flutter test had no test directory. Use per-package commands, not root Flutter commands.
+- Preserved pre-existing untracked apps/customer_app, apps/partner_app, apps/admin_web, functions and packages/cargox_firebase; do not import or commit them.
+- Next batch: shared API adapter, original vector vehicles, accessible service navigation, Auto/Car quote/status/schedule and unpaid recurring previews. Production gates remain unchanged.

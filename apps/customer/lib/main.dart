@@ -132,7 +132,7 @@ class _CustomerHomeState extends State<CustomerHome> {
         SwitchListTile.adaptive(title: const Text('Pink Rider Only'),
             subtitle: const Text('Never silently assign another driver'),
             value: pinkOnly,onChanged: (v)=>setState(()=>pinkOnly=v),
-            activeColor: CargoXColors.pink),
+            activeThumbColor: CargoXColors.pink),
         FilledButton(onPressed: submitting ? null : book,
             child: const Text('Request demo ride')),
         const SizedBox(height: 15),
