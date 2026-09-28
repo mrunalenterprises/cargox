@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cargox_ui/cargox_ui.dart';
 import 'package:cargox_demo/cargox_demo.dart';
 
@@ -316,13 +317,27 @@ class PartnerTrip extends StatefulWidget {
   State<PartnerTrip> createState() => _PartnerTripState();
 }
 
-class _PartnerTripState extends State<PartnerTrip> {
+class _PartnerTripState extends State<PartnerTrip>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Never retain a partly entered trip code when the driver leaves the app.
+    if (state != AppLifecycleState.resumed) code.clear();
+  }
+
   late Map<String, dynamic> ride = widget.initialRide;
   final code = TextEditingController();
   bool busy = false;
   String? error;
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     code.dispose();
     super.dispose();
   }
@@ -384,6 +399,9 @@ class _PartnerTripState extends State<PartnerTrip> {
               enabled: !busy,
               maxLength: 4,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              autocorrect: false,
+              enableSuggestions: false,
               decoration:
                   const InputDecoration(labelText: '4-digit customer code')),
           FilledButton(
