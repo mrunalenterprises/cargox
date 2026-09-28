@@ -1,6 +1,6 @@
 # Codex Sprint 00 — Clean bootstrap (paste into Codex in VS Code)
 Date: 2026-09-28. Project: CargoX. Workspace: C:\Projects\CargoX.
-Read docs/PHASE1_SCOPE.md from this checked-out repository as the **product contract**. Do not import any code or credentials from older projects.
+Read both docs/PHASE1_SCOPE.md and docs/CARGOX_MASTER_ROADMAP_AND_ALL_APP_CARDS_V1.md from this checked-out repository as the **product contract and complete card/screen inventory**. If wording conflicts, keep stricter safety and Phase 1 gating from PHASE1_SCOPE.md, report any ambiguity, and do not silently drop Daily Services or Monthly Packs. Do not import any code or credentials from older projects.
 
 You are the senior architect + implementation agent. Your immediate goal is to create a compiling/testable clean monorepo foundation **only**, not pretend to implement the whole marketplace in one pass.
 
