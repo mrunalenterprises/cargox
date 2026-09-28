@@ -203,4 +203,23 @@ void main() {
     expect(find.text('Coming soon'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('trip code hides on background and requires explicit refresh',
+      (tester) async {
+    final api = FakeApi();
+    await tester.pumpWidget(app(TripPage(api: api, initialRide: api.ride)));
+    await tapText(tester, 'Refresh trip status');
+    expect(find.text('0421'), findsOneWidget);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await tester.pump();
+    expect(find.text('0421'), findsNothing);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(find.text('0421'), findsNothing,
+        reason: 'Do not silently reveal the code on resume');
+
+    await tapText(tester, 'Refresh trip status');
+    expect(find.text('0421'), findsOneWidget);
+  });
 }
