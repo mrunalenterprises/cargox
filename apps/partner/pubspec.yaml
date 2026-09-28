@@ -1,5 +1,5 @@
 name: cargox_partner
-description: CargoX driver/partner Flutter preview, connected to loopback-only local demo.
+description: PIP PIP driver/partner Flutter preview, connected to loopback-only local demo.
 publish_to: none
 version: 0.1.0+1
 environment:

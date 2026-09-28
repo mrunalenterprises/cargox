@@ -12,7 +12,7 @@ class CustomerApp extends StatelessWidget {
   final DemoApi api;
   @override
   Widget build(BuildContext context) => MaterialApp(
-      title: 'CargoX Customer · Local Demo',
+      title: '${PipPipBrand.customerApp} · ${PipPipBrand.localDemo}',
       theme: cargoxTheme(),
       debugShowCheckedModeBanner: false,
       home: WelcomePage(api: api));
@@ -34,7 +34,8 @@ class _WelcomePageState extends State<WelcomePage> {
     'mr': ['प्रत्येक प्रवास सुंदर.', 'मराठीत पुढे चला'],
   };
   @override
-  Widget build(BuildContext context) => CargoXPage(title: 'CargoX', children: [
+  Widget build(BuildContext context) =>
+      CargoXPage(title: PipPipBrand.name, children: [
         const VehicleArt(kind: 'car'),
         Text(copy[language]![0],
             style: const TextStyle(
@@ -82,7 +83,7 @@ class _WelcomePageState extends State<WelcomePage> {
           FilledButton(
               onPressed: () =>
                   replaceCargoX(context, CustomerHome(api: widget.api)),
-              child: const Text('Explore CargoX')),
+              child: const Text('Explore PIP PIP')),
         ],
       ]);
 }
@@ -91,7 +92,8 @@ class CustomerHome extends StatelessWidget {
   const CustomerHome({super.key, required this.api});
   final DemoApi api;
   @override
-  Widget build(BuildContext context) => CargoXPage(title: 'CargoX', actions: [
+  Widget build(BuildContext context) =>
+      CargoXPage(title: PipPipBrand.name, actions: [
         IconButton(
             tooltip: 'Ride history',
             onPressed: () => openCargoX(context, RideHistory(api: api)),

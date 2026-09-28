@@ -1,4 +1,7 @@
-# cargox_partner
+# PIP PIP Partner
+
+The Dart package identifier remains `cargox_partner` for compatibility. See
+[`docs/BRANDING.md`](../../docs/BRANDING.md) for the product naming policy.
 
 A new Flutter project.
 

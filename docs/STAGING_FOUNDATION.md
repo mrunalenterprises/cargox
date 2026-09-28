@@ -29,7 +29,7 @@ Enable phone authentication and the selected SMS/captcha provider in the approve
 
 ## HTTP contract
 
-All responses use `Cache-Control: no-store`. POST requires JSON, has a 16 KB limit and rejects unknown fields. No browser origin/CORS is enabled yet. Native clients use explicit Bearer tokens. Providers time out after seven seconds; errors do not reveal tokens, phone numbers, SQL or provider details.
+All responses use `Cache-Control: no-store`, `nosniff`, an all-deny content-security policy, no-referrer, frame denial, same-origin resource policy and a no-camera/geolocation/microphone permissions policy. POST requires JSON, has a 16 KB limit and rejects unknown fields. No browser origin/CORS is enabled yet. Native clients use explicit Bearer tokens. Providers time out after seven seconds; errors do not reveal tokens, phone numbers, SQL or provider details.
 
 | Route | Body or result |
 | --- | --- |

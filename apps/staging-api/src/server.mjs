@@ -35,7 +35,11 @@ export function createStagingServer(adapter, { now=Date.now }={}) {
   const server=createServer(async(req,res)=>{
     const send=(status,body)=>{
       res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',
-        'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'",...(status===429?{'Retry-After':'600'}:{})});
+        'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'",
+        'Referrer-Policy':'no-referrer','X-Frame-Options':'DENY',
+        'Cross-Origin-Resource-Policy':'same-origin',
+        'Permissions-Policy':'camera=(), geolocation=(), microphone=()',
+        ...(status===429?{'Retry-After':'600'}:{})});
       res.end(JSON.stringify(body));
     };
     try {

@@ -1,8 +1,8 @@
-# CargoX — Phase 1 Passenger Mobility
+# PIP PIP — Phase 1 Passenger Mobility
 
 **Mrunal Technologies · clean-slate rebuild · development only**
 
-**Current branch:** `feature/passenger-phase1-v1` (no legacy CargoX code or old backend reused).
+**Current branch:** `feature/passenger-phase1-v1` (no legacy implementation or old backend reused).
 **One-prompt requirements:** [docs/CARGOX_MASTER_BUILD_PROMPT.md](docs/CARGOX_MASTER_BUILD_PROMPT.md)
 **Actual development state:** [docs/BUILD_PROGRESS.md](docs/BUILD_PROGRESS.md)
 
@@ -32,7 +32,7 @@ npm --prefix apps/staging-api ci
 npm run test:staging
 ```
 
-`npm test` deliberately runs only the existing zero-dependency demo suite; the staging package has its own pinned dependencies and CI job. `scripts/Test-CargoX.ps1` runs both suites before Flutter/Admin checks and Android compilation.
+`npm test` deliberately runs only the existing zero-dependency demo suite; the staging package has its own pinned dependencies and CI job. `scripts/Test-CargoX.ps1` (a retained technical script name) runs both suites before Flutter/Admin checks and Android compilation.
 
 [Visual QA status](docs/VISUAL_QA.md) records the browser permission blocker. The vehicle-art and responsive UI candidate is retained locally, excluded from the verified backend push until screenshot/viewport QA can run.
 

@@ -1,4 +1,4 @@
-# CargoX Phase 1 — Decisions and launch gates
+# PIP PIP Phase 1 — Decisions and launch gates
 
 ## Confirmed product scope
 - Clean-slate project under Mrunal Technologies. Passenger services: Bike, Auto, Car, Outstation (One Way, Round Trip, Daily Car), Shared Car. Goods/logistics/parcel only in Phase 2.

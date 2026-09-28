@@ -1,4 +1,4 @@
-# CargoX screen inventory and visual rules
+# PIP PIP screen inventory and visual rules
 Design reference: primary #59BAA1, surface #B4DACF, card #ECEDED, action #0E885A, complementary accessible pink. Original glossy vehicle cards, subtle highlight, meaningful motion <240ms and OS reduced-motion support; never clone competitor assets.
 
 ## Customer

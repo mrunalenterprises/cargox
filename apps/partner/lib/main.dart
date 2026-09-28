@@ -9,7 +9,7 @@ class PartnerApp extends StatelessWidget {
   final DemoApi api;
   @override
   Widget build(BuildContext context) => MaterialApp(
-      title: 'CargoX Partner · Local Demo',
+      title: '${PipPipBrand.partnerApp} · ${PipPipBrand.localDemo}',
       theme: cargoxTheme(),
       debugShowCheckedModeBanner: false,
       home: PartnerEntry(api: api));
@@ -20,7 +20,7 @@ class PartnerEntry extends StatelessWidget {
   final DemoApi api;
   @override
   Widget build(BuildContext context) =>
-      CargoXPage(title: 'CargoX Partner', children: [
+      CargoXPage(title: PipPipBrand.partnerApp, children: [
         const VehicleArt(kind: 'auto'),
         const Text('A better shift starts here.',
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
@@ -134,7 +134,7 @@ class _PartnerHomeState extends State<PartnerHome> {
 
   @override
   Widget build(BuildContext context) =>
-      CargoXPage(title: 'CargoX Partner', children: [
+      CargoXPage(title: PipPipBrand.partnerApp, children: [
         const Text('Drive your day.',
             style: TextStyle(
                 fontSize: 34,

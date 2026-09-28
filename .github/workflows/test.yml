@@ -23,11 +23,13 @@ jobs:
         package: [packages/cargox_demo, packages/cargox_ui, apps/customer, apps/partner]
     steps:
       - uses: actions/checkout@v4
-      - name: Check out the verified Flutter SDK revision
+      - name: Check out the verified Flutter SDK release
         uses: actions/checkout@v4
         with:
           repository: flutter/flutter
-          ref: 4cf24164269a5ebf0c16a028a00727d0e77bbb05
+          # A raw shallow commit checkout reports 0.0.0-unknown to pub on
+          # current hosted runners. The release tag preserves SDK metadata.
+          ref: 3.47.5
           path: .flutter-sdk
       - name: Add Flutter to PATH
         run: echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"

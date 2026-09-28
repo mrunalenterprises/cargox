@@ -2,6 +2,7 @@
   "name": "cargox-admin-local-preview",
   "private": true,
   "version": "0.1.0",
+  "description": "PIP PIP local Admin preview.",
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 3001",
     "build": "next build",

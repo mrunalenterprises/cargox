@@ -1,4 +1,7 @@
-# cargox_customer
+# PIP PIP Customer
+
+The Dart package identifier remains `cargox_customer` for compatibility. See
+[`docs/BRANDING.md`](../../docs/BRANDING.md) for the product naming policy.
 
 A new Flutter project.
 

@@ -1,5 +1,5 @@
 name: cargox_customer
-description: CargoX customer Flutter preview, wired to loopback-only demo.
+description: PIP PIP customer Flutter preview, wired to loopback-only demo.
 publish_to: none
 version: 0.1.0+1
 environment:

@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'vehicle_art.dart';
 export 'vehicle_art.dart';
 
+/// Product-facing names shared by every Flutter surface.
+///
+/// The surrounding `cargox_*` symbols remain stable technical identifiers so
+/// package imports, Android builds, and existing integrations continue to work.
+abstract final class PipPipBrand {
+  static const name = 'PIP PIP';
+  static const company = 'Mrunal Technologies';
+  static const customerApp = 'PIP PIP Customer';
+  static const partnerApp = 'PIP PIP Partner';
+  static const localDemo = 'Local Demo';
+}
+
 class CargoXColors {
   static const primary = Color(0xFF59BAA1);
   static const softMint = Color(0xFFB4DACF);

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { sections } from "../lib/sections";
+import { brand } from "../lib/brand";
 export const metadata: Metadata = {
-  title: "CargoX · Local Admin Preview",
-  description: "Development-only CargoX Admin UI, not production operations.",
+  title: brand.localPreview,
+  description: `Development-only ${brand.admin} UI, not production operations.`,
 };
 export default function RootLayout({ children }: Readonly<{children: React.ReactNode}>) {
   return <html lang="en"><body><a className="skip-link" href="#content">Skip navigation</a>

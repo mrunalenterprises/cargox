@@ -47,6 +47,12 @@ test('authenticated customer onboarding persists through HTTP and is isolated by
  const token=await sign(1);
  const r=await request('/v1/onboarding/customer',consent,token);assert.equal(r.status,200);assert.equal(r.body.result.user_id,id(1));
  assert.equal(r.headers.get('cache-control'),'no-store');
+ assert.equal(r.headers.get('x-content-type-options'),'nosniff');
+ assert.equal(r.headers.get('content-security-policy'),"default-src 'none'");
+ assert.equal(r.headers.get('referrer-policy'),'no-referrer');
+ assert.equal(r.headers.get('x-frame-options'),'DENY');
+ assert.equal(r.headers.get('cross-origin-resource-policy'),'same-origin');
+ assert.equal(r.headers.get('permissions-policy'),'camera=(), geolocation=(), microphone=()');
  assert.equal((await request('/v1/onboarding/customer',undefined,await sign(2))).body.length,0);
  assert.equal((await request('/v1/onboarding/customer',undefined,token)).body.length,1);
 });

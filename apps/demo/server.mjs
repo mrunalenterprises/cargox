@@ -74,7 +74,7 @@ if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
  const port=Number(process.env.PORT)||4173;
  const host="127.0.0.1"; // intentional: unauthenticated demo MUST NOT listen publicly
  createDemoServer().server.listen(port,host,()=>{
-   console.log("CargoX LOCAL DEMO only: http://"+host+":"+port);
+   console.log("PIP PIP LOCAL DEMO only: http://"+host+":"+port);
    console.log("DO NOT expose this unauthenticated demo server to the internet.");
  });
 }

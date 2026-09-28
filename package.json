@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "CargoX Phase 1 passenger mobility clean start. Node demo is not a live ride platform.",
+  "description": "PIP PIP Phase 1 passenger mobility clean start. Node demo is not a live ride platform.",
   "engines": {"node": ">=22"},
   "scripts": {
     "dev:demo": "node apps/demo/server.mjs",

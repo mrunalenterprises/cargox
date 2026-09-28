@@ -1,4 +1,4 @@
-# CargoX Phase 1 Architecture
+# PIP PIP Phase 1 Architecture
 
 ## Purpose and boundaries
 Clean-slate passenger platform. `docs/CARGOX_MASTER_BUILD_PROMPT.md` is full approved implementation instruction; docs/DECISIONS.md is the decision register.

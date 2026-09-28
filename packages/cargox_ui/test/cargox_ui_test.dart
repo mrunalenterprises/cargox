@@ -3,9 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cargox_ui/cargox_ui.dart';
 
 void main() {
-  test('CargoX design tokens preserve approved mint palette', () {
+  test('PIP PIP design tokens preserve approved mint palette', () {
     expect(CargoXColors.primary, const Color(0xFF59BAA1));
     expect(CargoXColors.deep, const Color(0xFF0E885A));
+  });
+  test('PIP PIP product constants stay aligned', () {
+    expect(PipPipBrand.name, 'PIP PIP');
+    expect(PipPipBrand.company, 'Mrunal Technologies');
   });
 
   testWidgets('enabled glossy card responds to a tap', (tester) async {

@@ -1,4 +1,5 @@
 import { snapshot } from '../lib/demo';
+import { brand } from '../lib/brand';
 export const dynamic = 'force-dynamic';
 export default async function AdminHome() {
   const data = await snapshot();
@@ -11,7 +12,7 @@ export default async function AdminHome() {
     ["Audit events", data.auditCount],
   ] as const : [];
   return <main className="page">
-    <header><div className="brand"><span className="brand-icon">CX</span><div>Cargo<span className="x">X</span><small>MRUNAL TECHNOLOGIES</small></div></div><span className="flag">LOCAL DEVELOPMENT ONLY</span></header>
+    <header><div className="brand"><span className="brand-icon">PP</span><div>{brand.name}<small>{brand.company}</small></div></div><span className="flag">LOCAL DEVELOPMENT ONLY</span></header>
     <section className="hero"><span className="overline">PASSENGER OPERATIONS</span><h1>Every ride,<br/><em>in view.</em></h1><p>Transparent city controls and a clean operational picture.</p></section>
     {!data ? <div className="notice"><strong>Local demo API is offline.</strong><p>Run <code>npm run dev:demo</code> in the repository root and refresh this page.</p></div> :
     <>

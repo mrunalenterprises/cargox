@@ -1,14 +1,14 @@
-# CargoX Development Progress
+# PIP PIP Development Progress
 
 Updated: 2026-09-28
 Branch: `feature/passenger-phase1-v1`
 Protocol: update this file **after each batch**; distinguish committed code from verified working features. Do not reset or repeat existing progress.
 
-Current local status: E1–E3 remain verified; F2 adds a locally tested staging auth/onboarding/RLS foundation. The F1 asset and responsive UI patch is retained locally, uncommitted pending blocked browser visual QA, so it is excluded from the verified push. The production pilot is NOT complete. The latest results/dependencies are in F1/F2 below; earlier batch notes are historical evidence.
+Current local status: E1–E3 remain verified; F2 adds a locally tested staging auth/onboarding/RLS foundation. The F1 asset and responsive UI patch is retained locally, uncommitted pending blocked browser visual QA, so it is excluded from the verified push. The production pilot is NOT complete. The latest results/dependencies are in F1/F2 below; earlier `CargoX` entries are historical implementation evidence, and current product-facing naming is PIP PIP by Mrunal Technologies.
 
 ## Phase 1 scope and non-negotiable constraints
 
-Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation incl Daily Car, Shared Car; Pink Rider preferences; Schedule, Daily and Monthly fixed-route packs. Phase 2 goods logistics deferred. Mint #59BAA1 glossy, smooth, accessible UI. Sensitive service and legal claims remain launch-gated.
+Fresh PIP PIP build; no old code/database reused. Bike, Auto, Car, Outstation incl Daily Car, Shared Car; Pink Rider preferences; Schedule, Daily and Monthly fixed-route packs. Phase 2 goods logistics deferred. Mint #59BAA1 glossy, smooth, accessible UI. Sensitive service and legal claims remain launch-gated.
 
 ## Batch A — repository audit and written contracts
 
@@ -148,3 +148,14 @@ If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, tr
 - Added `docs/STAGING_FOUNDATION.md` with exact setup, routes, primary documentation links, threat boundaries and remaining dependencies. Expanded the verifier and CI with a separate staging suite. Root `npm test` explicitly runs the original two demo test files so unrelated package dependencies cannot contaminate the zero-dependency demo job.
 - Still pending: approved isolated Supabase project/configuration; hosted migration review and real JWT/PostgREST RLS tests; SMS/captcha and staff MFA; audited operator bootstrap; private Storage, scanning/retention and trusted verification; refresh/sign-out and staged app adapters; native PostgreSQL concurrency/security/load checks. PGlite is local database evidence, not a replacement for those integrations.
 - Verified foundation commit `3cd6ca0` was pushed to `origin/feature/passenger-phase1-v1` without force. The browser UI candidate remains intentionally uncommitted locally pending its blocked screenshot/viewport QA; all preserved legacy artifacts remain untouched.
+
+## Batch F3 — PIP PIP product rebrand, CI repair and staging response hardening (2026-09-29)
+
+- Audited `feature/passenger-phase1-v1` at `38ad919`; `git fetch origin` reported 0 ahead and 0 behind before this batch. All pre-existing F1 glossy SVG artwork, generator, responsive CSS/HTML/JS changes and legacy untracked folders remain present and are deliberately excluded from this verified commit pending authorized browser visual review.
+- Rebranded the user-facing product to **PIP PIP** and company to **Mrunal Technologies**. Flutter uses `PipPipBrand`; Admin uses `apps/admin/lib/brand.ts`; Customer and Partner Material titles, Android launcher labels, splash/launcher PIP mark, local-demo metadata/logs and documentation use the approved display names. The Mint Teal theme, motion behavior, booking flows, Pink Rider safeguards and their public-safe wording were not changed.
+- Added `docs/BRANDING.md`, including the selected internal Pink Rider tagline, its unpublished status, and the compatibility-sensitive identifiers retained as technical `cargox` names (Dart/import symbols, Android application IDs, API/environment names, schema/migration names, folders and remote). No package, API, database or remote rename was attempted.
+- Inspected latest remote CI runs. The four latest runs failed only because the workflow checked out a raw shallow Flutter commit; hosted `flutter pub get` identified it as `0.0.0-unknown` and rejected Flutter SDK constraints. Demo-domain, Admin and staging jobs had passed. CI now checks out the verified Flutter `3.47.5` release tag so its SDK metadata is available to pub. Remote verification is pending the post-push run.
+- Hardened the local staging foundation response contract without requiring credentials: every JSON response now has no-store, nosniff, all-deny CSP, no-referrer, frame denial, same-origin resource policy and an explicit no camera/geolocation/microphone permissions policy. Added HTTP assertions. Hosted authentication, remote migrations, payments and deployment remain untouched.
+- PASSED: `./scripts/Test-CargoX.ps1 -DemoApi http://127.0.0.1:4174` exited 0 after the rebrand: 23/23 Node regressions; 26/26 staging checks/RLS tests; clean analysis for all four Flutter packages; adapter 2/2, UI 9/9, Customer 7/7 and Partner 3/3 host tests; Admin type generation/TypeScript, all 11 section checks and Next build; Customer and Partner Android debug APKs built successfully (17.8s and 17.7s). The focused post-hardening rerun also passed Node 23/23 plus staging check and 26/26 tests. `git diff --check` passed.
+- Android device integration is not claimed for this batch. Customer integration built and installed the rebranded APK, then `emulator-5554` disappeared before an assertion result. One fresh read-only, two-core retry stayed `device`-listed but never returned `sys.boot_completed=1`; it was shut down. Partner integration was not run after this host failure. This is the same Windows emulator instability previously observed, not an app assertion failure.
+- Browser visual QA remains blocked by the saved local-browser permission. No workaround or screenshot claim was made. Needed next action: authorize the existing browser surface for the local Admin/demo URLs, then perform the pending responsive screenshot review before committing the F1 artwork/UI candidate.

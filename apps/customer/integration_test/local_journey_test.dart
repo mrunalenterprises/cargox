@@ -28,7 +28,7 @@ void main() {
       'Continue in English',
       'Continue as demo customer',
       'Use manual pickup',
-      'Explore CargoX',
+      'Explore PIP PIP',
       'Auto',
       'View fare quote',
       'Continue to demo confirmation',
