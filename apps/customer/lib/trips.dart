@@ -10,7 +10,30 @@ class TripPage extends StatefulWidget {
   State<TripPage> createState() => _TripPageState();
 }
 
-class _TripPageState extends State<TripPage> {
+class _TripPageState extends State<TripPage> with WidgetsBindingObserver {
+  // A fictional trip code should not remain visible after leaving the app.
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground && code != null && mounted) {
+      setState(() => code = null);
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   late Map<String, dynamic> ride = widget.initialRide;
   bool busy = false;
   String? error, code;
@@ -33,7 +56,10 @@ class _TripPageState extends State<TripPage> {
       if (ride['state'] == 'ASSIGNED') {
         final result = await widget.api.get(
             '/api/demo/customer-code?rideId=${Uri.encodeQueryComponent(ride['id'] as String)}');
-        if (mounted) setState(() => code = result['code'] as String);
+        // Do not reveal a late API response while the app is backgrounded.
+        if (mounted && _foreground && ride['state'] == 'ASSIGNED') {
+          setState(() => code = result['code'] as String);
+        }
       }
     } catch (e) {
       if (mounted) setState(() => error = '$e');
