@@ -27,7 +27,7 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [x] `apps/partner`: Flutter fake partner offers / accept / start OTP / complete source.
 - [x] `apps/admin`: Next.js read-only local Admin status preview source.
 - [x] `supabase/migrations/20260928000100_cargox_phase1_schema.sql`: default-deny RLS **design migration, not deployed**.
-- [ ] **Node test verification:** code and tests committed, but a full actual Node/GitHub Actions run is required. Earlier non-Node in-isolate logic check was 14/14 with fake crypto; that is **not** equivalent to runtime test success.
+- [ ] **Node test verification:** code and tests committed, but a full actual Node/GitHub Actions run is required. Earlier non-Node in-isolate logic check was 14/14 with fake crypto; that is **not** equivalent to runtime test success. On 2026-09-28 the current domain, demo server, browser JS, domain tests and API tests all passed **syntax parsing in an isolated JavaScript runtime after stripping module syntax/import.meta**; exact real Node CI status still unverified.
 - [ ] Flutter SDK project platform files, actual `flutter analyze`, `flutter test` and Android device build. Local Flutter install needed.
 - [ ] Next `npm install`, `tsc` typecheck and `next build`; pin actual resolved patched versions/lockfile after install.
 - [ ] Staging Supabase database migration and RLS integration tests. **Do not deploy migrations to production.**
@@ -46,6 +46,11 @@ Fresh CargoX build; no old code/database reused. Bike, Auto, Car, Outstation inc
 - [ ] Production Pink Rider privacy-protecting enrollment and matching, fresh selfie vendor integration and never-fallback regression on recurring replacements.
 - [ ] Guardian + authorized pickup handoff safety workflow; launch disabled until verified legal/operational approvals.
 - [ ] Bike and Shared Car launch gates / appropriate production flows once approved.
+
+## GitHub review checkpoint
+
+- Draft pull request: https://github.com/mrunalenterprises/cargox/pull/3 (head: `feature/passenger-phase1-v1`; base: `main`). It is **draft**. Do not merge until CI and app builds plus security review succeed.
+- Root npm test script is `node --test` to avoid Windows glob expansion issues.
 
 ## Tests and status (do not embellish)
 
