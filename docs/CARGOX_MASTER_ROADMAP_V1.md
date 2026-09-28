@@ -55,3 +55,25 @@ Overview & cities, service/legal readiness gates, partner staff verification -> 
 
 ## Decisions to explicitly sign off
 Initial licensed city and services; legal classification of pooling/private carpool/bike school routes; tech/maps/payment stack; operational safety desk; rate/surge/commission/driver settlements per city; monthly included trip vs day basis, holidays, delays/skip/pause/cancel/refund and outstation toll/driver allowance; driver hire employment terms; branding/design tokens. Freeze UX/workflow and data schemas after signoff, keep numeric policies in admin. This plan reduces rework but cannot guarantee no change with laws, operations or real-world user testing.
+
+
+## APPROVED BUSINESS SETTING — Configurable per-km fares and commission (28 Sep 2026)
+The owner confirms that CargoX will apply for **all legally required aggregator and service/vehicle permissions** before operating. This is an intention and launch gate, not a statement that permissions are already granted.
+
+Pricing and platform commission are **Admin-managed**, configurable by country/state, licensing scheme, city/operating jurisdiction, vehicle/service category, route (including outstation), booking mode (Now/Schedule/Recurring/Monthly) and effective date. Do not hardcode a universal per-km price or default platform commission into client code, server, or contracts. Any prior 25% commission idea is an unapproved historic proposal and must **not** be silently shipped as the default.
+
+**Admin Pricing Settings cards**:
+- Legal Jurisdiction & License Model: approved authority, geographic scope, fare order reference, licence model (e.g. surge vs convenience-fee where applicable), required vehicle/driver permits; approved min/max fares, max platform share/fees and minimum driver share where specified. Attach authoritative rule reference, effective date and verified-by approver. Lock launch when required legal approval is missing, expired or unresolved.
+- Base Fare / Minimum Trip Distance, Per-KM Rate, Per-Minute/Waiting, Outstation Base/Per-KM, Night/Peak modifiers, Toll/Parking/Tax itemisation; per-seat prices for Shared Car only under the authorised legal model. Only expose controls that are permitted by the selected state/authority/licence model. An authorised fare order overrides a proposed custom price.
+- Commission Mode: legally permissible platform percentage/fixed convenience fee (if permitted), payout floor, fee payer and tax basis; platform commission is **distinct** from GST, toll/parking, payment fees, driver payouts and any regulated driver-welfare levy.
+- Daily and Monthly Packs: route-specific rate, trips/days included, one-way vs two-leg, holiday exclusions, cancellation/no-show/refund rules and driver compensation. A rate change must not retroactively alter accepted ride or pack contracts.
+- Deployment: Draft -> Simulate/Validate Against Compliance Profile -> Authorized Admin Approval -> Schedule Effective Time -> Publish. Editable only with pricing permission and (if assigned) second-person approval; maintain audit history, reason, rollback to a newly approved version and notification to affected parties.
+
+**Backend pricing/dispatch contract**:
+- Server computes final eligible quote from effective, versioned fare rule and route. Quote response displays total, fare components, applicable regulated limits, driver amount and platform share consistent with the applicable local rules.
+- Client cannot submit or override fare/commission. Revalidate rate and legal service eligibility server-side before quote acceptance and driver offer; ensure no self-rate arrangement bypasses a mandated tariff/share.
+- Immutable quoted/accepted version IDs persist on each trip, return leg and monthly-pack purchase; subsequent Admin edits affect only eligible future quotes/renewals, not already accepted commitments.
+- Audit tests: rates outside mandatory bounds rejected, minimum driver share protected, city licence inactive blocks booking, unauthorised staff cannot publish, scheduled changes do not mutate existing pack amounts, every receipt shows lawful itemisation.
+
+**Regulatory research**: MoRTH Motor Vehicle Aggregator Guidelines 2025 are framework guidance for State rules. Maharashtra's current operative aggregator regulations and RTA tariff/driver payout terms must be checked against the official latest gazette/orders with licensed transport counsel before configuring the production compliance profile; an October 2025 Maharashtra document is explicitly a *draft* and is not sufficient alone. Multi-state rollout uses independent jurisdiction profiles and authorisations.
+
