@@ -1,0 +1,13 @@
+name: cargox_customer
+description: CargoX customer Flutter preview, wired to loopback-only demo.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  cargox_ui:
+    path: ../../packages/cargox_ui
+flutter:
+  uses-material-design: true
