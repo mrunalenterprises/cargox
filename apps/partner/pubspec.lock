@@ -17,6 +17,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  cargox_demo:
+    dependency: "direct main"
+    description:
+      path: "../../packages/cargox_demo"
+      relative: true
+    source: path
+    version: "0.1.0"
   cargox_ui:
     dependency: "direct main"
     description:

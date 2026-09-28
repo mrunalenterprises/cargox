@@ -38,6 +38,8 @@ export function createDemoServer(){
    if(req.method==="GET"&&path==="/api/rides")return respond(res,200,[...engine.rides.values()].map(r=>({
      id:r.id,service:r.service,pickup:r.pickup,drop:r.drop,state:r.state,partnerId:r.partnerId,quote:r.quote,pinkOnly:r.pinkOnly,mode:r.mode,scheduledAt:r.scheduledAt,leg:r.leg
    })));
+   if(req.method==="POST"&&path==="/api/quotes")return respond(res,200,engine.quote(json));
+   if(req.method==="GET"&&path==="/api/plans")return respond(res,200,[...engine.plans.values()]);
    if(req.method==="POST"&&path==="/api/rides")return respond(res,201,engine.createRide(json));
    if(req.method==="GET"&&path==="/api/offers")return respond(res,200,engine.partnerOffers(url.searchParams.get("partnerId")));
    if(req.method==="GET"&&path==="/api/demo/customer-code"){

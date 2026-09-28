@@ -8,3 +8,6 @@
 **/.env.local
 **/.flutter-plugins-dependencies
 *.log
+
+.local-tmp/
+.artifacts/

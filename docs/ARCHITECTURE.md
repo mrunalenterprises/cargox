@@ -20,3 +20,9 @@ Recurring: immutable route/quoted per-leg amount + weekday/date rule -> list of 
 The demo's `/api/demo/customer-code` returns an OTP to a loopback demo browser with no user auth — NEVER expose it on a public address or copy it to production. Demo partners have fictional verification flags and must not be interpreted as verified people. Production needs cryptographic OTP with strict authenticated customer delivery, short TTL and rate limit, replay prevention, audit, identity/selfie integration, live GPS permission and secured expiring tracking shares.
 
 All production child data/school transport, Pink Rider sex/eligibility verification and outstation commercial permits are launch-gated.
+
+## Local Flutter integration (2026-09-28)
+
+`packages/cargox_demo` is an injectable Dart adapter, restricted to loopback/emulator HTTP origins, with bounded requests and explicit errors. No identity, pricing or payment authority is moved into the UI. Flutter quote requests use POST /api/quotes; unpaid draft library uses GET /api/plans. Existing ride/offer/code/start/finish endpoints remain the authority. No additional external service or database was connected.
+
+Android defaults to 127.0.0.1 with adb reverse. Debug-only cleartext enables the local API. The Apps do not request location or document permissions. User-supplied eligibility switches represent fictional fixtures only. Existing untracked legacy-looking artifacts were preserved and not imported.

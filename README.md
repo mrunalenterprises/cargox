@@ -54,27 +54,75 @@ Open <http://127.0.0.1:4173> on the **same laptop**. This demo intentionally bin
 
 Restarting the Node process clears all in-memory demo bookings and fake partners.
 
-## Mobile and web app scaffolds
+## Flutter apps and Next.js Admin
 
-The repository also contains Flutter Customer and Partner prototype source and reusable Flutter glossy card/theme source, plus a Next.js Admin preview. These are **scaffolds requiring installed SDKs**, not confirmed ready-to-distribute APKs.
+Customer (`apps/customer`) and Partner (`apps/partner`) have Android scaffolds, tested navigation and local API flows. Shared `packages/cargox_ui` supplies original vector vehicle art, glossy cards, keyboard activation and 170–220ms motion with OS reduced-motion support. `packages/cargox_demo` supplies an injectable, loopback-restricted HTTP adapter.
 
-- Flutter customer: `apps/customer`; driver: `apps/partner`; shared UI: `packages/cargox_ui`.
-- Admin: `apps/admin`. Its server fetches the local demo API for read-only counters.
-- Backend schema design: `supabase/migrations`. **Not deployed anywhere.**
+Verified toolchain: Flutter 3.47.0, Dart 3.13.0, Android SDK 37.0.0, Java 21.0.12, Node 24.19.0, npm 11.17.0. Android debug APKs are development artifacts, not release-ready apps. No physical-device performance result is claimed.
 
-On your laptop first run `flutter doctor`. Generate Android platform folders only if missing; preserve existing `pubspec.yaml` and `lib/main.dart` when scaffolding with Flutter. Then `flutter pub get`, `flutter analyze`, `flutter test`, and `flutter run` per app. The Android Emulator uses `10.0.2.2` to reach the laptop's demo API. If Android cleartext HTTP blocks the local demo, allow it in the **debug-only Android manifest**, never production.
+### Run Android locally
 
-For Admin (requires packages):
+Start the API in a separate terminal (`npm run dev:demo`). Use USB/emulator reverse forwarding so the unauthenticated API stays on the laptop loopback interface:
+
+```powershell
+cd C:\Projects\CargoX
+& C:\Android\Sdk\platform-tools\adb.exe reverse tcp:4173 tcp:4173
+cd apps\customer
+flutter pub get
+flutter run
+# In another terminal, use the same commands in apps\partner.
+```
+
+Both apps default to `http://127.0.0.1:4173`. Android cleartext is allowed only in debug manifests. The adapter also permits the emulator host `http://10.0.2.2:4173` via `--dart-define=CARGOX_DEMO_API=http://10.0.2.2:4173`; arbitrary remote origins are rejected.
+
+An older manually reviewed demo is currently preserved on 4173. The updated API was started separately on 4174 to avoid clearing its data. To use that process:
+
+```powershell
+& C:\Android\Sdk\platform-tools\adb.exe reverse tcp:4174 tcp:4174
+flutter run --dart-define=CARGOX_DEMO_API=http://127.0.0.1:4174
+```
+
+To start the updated API on another port, set `$env:PORT='4174'` before `npm run dev:demo`. Never terminate a running demo just to reclaim its port without accounting for its in-memory state.
+
+### Customer and Partner walkthrough
+
+1. Customer: language → fictional sign-in → manual-location choice → demo city → Auto/Car. Enter route/distance, optionally schedule, and fetch the server quote.
+2. Choose Pink Rider Only if desired and the fictional eligible-passenger fixture. Explicitly consent to a demo request. No payment is taken.
+3. Partner: enter demo, select the matching seeded partner, refresh offers and accept. In Customer, refresh the trip to retrieve its code.
+4. Partner: validate the code, start, complete. Customer refreshes for an unpaid receipt. History, scheduled workload and Admin reflect server state.
+5. Daily/Monthly: choose weekdays, fixed route, date range, independent return time and preference. Preview distinct legs, save an unpaid draft and reopen its calendar in My Monthly Packs. No entitlements or dispatch are created.
+
+Bike, Shared Car, Outstation One Way/Round Trip/Daily Intercity and guardian journeys have explicit gated navigation. Live partner onboarding, selfie, pricing, GPS, sharing, SOS and payout screens explain the missing integration rather than pretending to operate it. Full Hindi/Marathi translation is pending; onboarding has localized copy and detailed screens use English fallback.
+
+### Admin preview
 
 ```powershell
 cd C:\Projects\CargoX\apps\admin
-npm install
+npm ci
 npm run typecheck
 npm run build
 npm run dev
 ```
 
-The installed Next/React versions must be checked and patched as needed. The preview requires the local demo server running separately on port 4173; Admin dev server normally runs on port 3000.
+Open `http://127.0.0.1:3001`. Both `dev` and `start` bind to loopback. `npm run start` serves the built preview. Next 16.3.6, React/React DOM 19.2.0 and transitive packages are locked. Server-side `CARGOX_DEMO_API` defaults to port 4173 and rejects remote origins; see `.env.example`. This session's ignored `.env.local` selects 4174. The read-only preview has no production login/RBAC. Browser visual verification was denied in this session; TypeScript/build and an earlier HTTP 200 response were verified.
+
+### Verify and build
+
+```powershell
+cd C:\Projects\CargoX
+.\scripts\Test-CargoX.ps1
+# Omit Android compilation on hosts without the SDK:
+.\scripts\Test-CargoX.ps1 -SkipAndroid
+```
+
+The script fails at the first failed check. On this Windows host the JDK initially failed to establish its Unix-domain loopback socket. The script uses the ignored short `.local-tmp` directory via `JAVA_TOOL_OPTIONS` and restores the previous environment afterward. Successful APK locations:
+
+- `apps/customer/build/app/outputs/flutter-apk/app-debug.apk`
+- `apps/partner/build/app/outputs/flutter-apk/app-debug.apk`
+
+Optional Windows phone-sized UI rendering: from `apps/customer`, run `flutter test tool/render_preview_test.dart`. It uses the locally installed Segoe UI font without redistributing it and writes PNGs under ignored `.artifacts/`. This is a render-inspection task, not a physical-device benchmark.
+
+Do not reuse the pre-existing untracked `customer_app`, `partner_app`, `admin_web`, Firebase or `functions` artifacts. The canonical apps are `customer`, `partner` and `admin`.
 
 ## Tests and release gates
 

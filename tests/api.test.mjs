@@ -52,3 +52,33 @@ test("live school/child route is not available through generic booking endpoint"
  const r=await post("/api/rides",{service:"auto",pickup:"Home",drop:"School",distanceKm:3,childTrip:true});
  assert.equal(r.status,400);assert.equal(r.data.error,"CHILD_SERVICE_GATED");
 });
+
+test('quotes use server rates and respect service gates', async()=>{
+ const q=await post('/api/quotes',{service:'car',distanceKm:8,farePaise:1});
+ assert.equal(q.status,200);assert.equal(q.data.farePaise,19200);
+ for(const service of ['bike','shared','outstation']) {
+  const blocked=await post('/api/quotes',{service,distanceKm:8});
+  assert.equal(blocked.status,400);assert.equal(blocked.data.error,'UNAVAILABLE');
+ }
+});
+test('scheduled Car preserves city-local time and rejects impossible dates',async()=>{
+ const body={service:'car',pickup:'Home',drop:'Office',distanceKm:8,mode:'schedule'};
+ const invalid=await post('/api/rides',{...body,scheduledAt:'2026-02-30T09:00'});
+ assert.equal(invalid.status,400);assert.equal(invalid.data.error,'INVALID_DATE');
+ const valid=await post('/api/rides',{...body,scheduledAt:'2026-10-01T09:00'});
+ assert.equal(valid.status,201);assert.equal(valid.data.mode,'schedule');
+ assert.equal(valid.data.scheduledAt,'2026-10-01T09:00');
+});
+test('unpaid pack listing preserves Pink and separate legs without dispatch',async()=>{
+ const body={service:'car',pickup:'Home',drop:'Office',distanceKm:8,
+  startDate:'2026-10-01',endDate:'2026-10-02',weekdays:[4,5],pickupTime:'09:00',returnTime:'18:00',
+  pinkOnly:true,allPassengersWomenVerified:true,preferredPartnerId:'demo-pink-01'};
+ const denied=await post('/api/plans/quote',{...body,allPassengersWomenVerified:false});
+ assert.equal(denied.data.error,'CUSTOMER_ELIGIBILITY');
+ const before=await read('/api/rides');const saved=await post('/api/plans/demo',body);
+ assert.equal(saved.status,201);assert.equal(saved.data.state,'DEMO_UNPAID');
+ const plans=await read('/api/plans');const plan=plans.data.find(p=>p.id===saved.data.id);
+ assert.equal(plan.pinkOnly,true);assert.equal(plan.preferredPartnerId,'demo-pink-01');
+ assert.deepEqual(plan.legs.map(l=>l.leg),['outbound','return','outbound','return']);
+ assert.equal((await read('/api/rides')).data.length,before.data.length);
+});

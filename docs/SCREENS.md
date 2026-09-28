@@ -13,3 +13,10 @@ Staff login/RBAC -> City and service legal gates -> partner documents approvals 
 
 ## Implemented vs planned
 Current local Node demo: customer vehicle cards/quote/request + daily pack unpaid preview; partner eligible offer acceptance/start/complete; admin status metrics. Static visuals and mock test partners only. No real map, OTP SMS, auth, guardian enrollment, payments, GPS, permits, staffed support, production Next API or production deployment.
+
+## Flutter navigation delivered in batch E2
+
+- Customer: language/fallback, fictional login, manual permissions and city; all five service entries; Auto/Car route, server quote, Pink eligibility and explicit unpaid confirmation; schedule; matching/status, server customer code, tracking limitation, sharing/SOS gates, unpaid receipt/history; Daily purpose picker; Monthly quote/calendar and unpaid draft library; guardian gate.
+- Partner: fictional login and all four role previews; registration/review, fleet/service, Pink opt-in, rate settings and selfie gates; real local eligible offers, accept, server OTP start/completion, scheduled workload, trip history/unpaid earnings and navigation/SOS gates.
+- Original vector vehicles and reusable accessible glossy cards. Route transitions 170/210ms, spring tap 170ms, one-shot reflection 220ms. No perpetual animation; OS disableAnimations and accessibleNavigation remove motion.
+- Not delivered as live features: real authentication, maps, notifications, legal eligibility clearance, child transport, pooled seats, intercity dispatch, paid packs, entitlements, driver replacements, real pricing/payouts and staffed emergency response. Mini/Sedan/SUV are described as pending Admin configuration; the API has a single Car demo class.

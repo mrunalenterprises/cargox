@@ -86,3 +86,18 @@ If branch already exists locally, omit `--track`. Open http://127.0.0.1:4173, tr
 - An accidental repository-root flutter analyze traversed untracked functions/node_modules Firebase templates and an unresolved new package; root flutter test had no test directory. Use per-package commands, not root Flutter commands.
 - Preserved pre-existing untracked apps/customer_app, apps/partner_app, apps/admin_web, functions and packages/cargox_firebase; do not import or commit them.
 - Next batch: shared API adapter, original vector vehicles, accessible service navigation, Auto/Car quote/status/schedule and unpaid recurring previews. Production gates remain unchanged.
+
+## Batch E2 — Flutter navigation, original UI and local API wiring (2026-09-28)
+
+- Customer: language/fallback, fictional login, manual permissions, city, all service entries, Auto/Car route/server quote/Pink preferences/unpaid confirmation, Schedule, trip status/start-code/receipt/history, Daily purposes, Monthly calendar/drafts and guardian/safety gates.
+- Partner: demo login/role previews, onboarding/review/service/Pink/rate/selfie gates, eligible offers, accept, server OTP start/complete, workload/history and unpaid earnings. API errors display immediately.
+- Original vector vehicles including open-cabin Auto, Mint Teal glossy cards, keyboard activation, spring tap (170ms), custom routes (170/210ms), one-shot reflection (220ms); OS reduced-motion support. No physical-device FPS claim.
+- Injectable packages/cargox_demo loopback HTTP adapter with request deadlines; POST /api/quotes and GET /api/plans. Server now rejects impossible scheduled dates and ineligible Pink pack quotes. Reviewed web demo assets unchanged.
+- Final scripts/Test-CargoX.ps1 EXIT 0: Node syntax and 22/22 tests; Flutter analysis no issues in all four packages; Customer 7/7, Partner 3/3, shared UI 7/7, adapter 2/2 tests (19 total); npm ci reported 0 vulnerabilities; Next typegen/TypeScript and Next 16.3.6 build; BOTH Android debug APK builds succeeded.
+- Android fix: JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:/Projects/CargoX/.local-tmp. Default temp path failed in JDK AF_UNIX loopback initialization; IPv4 and alternate selector alone failed. Verification script restores the prior environment.
+- Live Dart HTTP smoke PASSED on isolated port 4174: Auto immediate and scheduled Pink Car quote -> eligible offer -> accept -> customer code -> start -> complete -> Admin API; unpaid Pink pack saved/listed with four distinct legs. Not physical-device E2E evidence.
+- Optional Flutter render task PASSED and Home/fare PNGs inspected at phone size. Earlier render harness blocked on fake-async image encoding; corrected with real-async capture. Segoe UI uses an installed Windows font, not a redistributed asset.
+- Old API on 4173 preserved with its in-memory state. Updated API runs on 4174. Use adb reverse tcp:4174 tcp:4174 and --dart-define=CARGOX_DEMO_API=http://127.0.0.1:4174, or deliberately restart the old API after accounting for its state.
+- Admin lockfile generated, dev/start restricted to 127.0.0.1:3001, configurable loopback API with 2.5s timeout. Ignored .env.local selects 4174. Earlier preview HTTP 200 verified. Browser permission DENIED visual inspection; not bypassed. Admin browser visual QA is unverified.
+- Remaining: device walkthrough/performance, full translations, real auth/RBAC/maps/GPS/KYC/selfie/SOS, legal approvals, paid entitlements/refunds/settlement and staging RLS. No deployment, production migrations, real payments or live gates activated.
+- Next batch: close route-motion/scaffold polish gaps and CI/handoff. Do not recreate the completed demo features above.

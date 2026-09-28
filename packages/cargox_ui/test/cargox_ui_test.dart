@@ -13,12 +13,15 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: cargoxTheme(),
       home: Scaffold(
-        body: Center(child: SizedBox(width: 190, child: CargoXServiceCard(
-          label: 'Auto',
-          subtitle: 'Demo available',
-          icon: Icons.electric_rickshaw,
-          onTap: () => presses++,
-        ))),
+        body: Center(
+            child: SizedBox(
+                width: 190,
+                child: CargoXServiceCard(
+                  label: 'Auto',
+                  subtitle: 'Demo available',
+                  icon: Icons.electric_rickshaw,
+                  onTap: () => presses++,
+                ))),
       ),
     ));
     expect(find.text('Auto'), findsOneWidget);
@@ -27,18 +30,22 @@ void main() {
     expect(presses, 1);
   });
 
-  testWidgets('Coming Soon card is disabled and does not dispatch', (tester) async {
+  testWidgets('Coming Soon card is disabled and does not dispatch',
+      (tester) async {
     var presses = 0;
     await tester.pumpWidget(MaterialApp(
       theme: cargoxTheme(),
       home: Scaffold(
-        body: Center(child: SizedBox(width: 190, child: CargoXServiceCard(
-          label: 'Bike',
-          subtitle: 'Coming soon',
-          enabled: false,
-          icon: Icons.two_wheeler,
-          onTap: () => presses++,
-        ))),
+        body: Center(
+            child: SizedBox(
+                width: 190,
+                child: CargoXServiceCard(
+                  label: 'Bike',
+                  subtitle: 'Coming soon',
+                  enabled: false,
+                  icon: Icons.two_wheeler,
+                  onTap: () => presses++,
+                ))),
       ),
     ));
     await tester.tap(find.text('Bike'), warnIfMissed: false);
@@ -46,20 +53,24 @@ void main() {
     expect(presses, 0);
   });
 
-  testWidgets('reduced motion still exposes card and supports selection', (tester) async {
+  testWidgets('reduced motion still exposes card and supports selection',
+      (tester) async {
     var presses = 0;
     await tester.pumpWidget(MaterialApp(
       theme: cargoxTheme(),
       home: MediaQuery(
         data: const MediaQueryData(disableAnimations: true),
         child: Scaffold(
-          body: Center(child: SizedBox(width: 190, child: CargoXServiceCard(
-            label: 'Car',
-            subtitle: 'Demo available',
-            selected: true,
-            icon: Icons.local_taxi,
-            onTap: () => presses++,
-          ))),
+          body: Center(
+              child: SizedBox(
+                  width: 190,
+                  child: CargoXServiceCard(
+                    label: 'Car',
+                    subtitle: 'Demo available',
+                    selected: true,
+                    icon: Icons.local_taxi,
+                    onTap: () => presses++,
+                  ))),
         ),
       ),
     ));

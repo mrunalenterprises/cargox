@@ -94,6 +94,7 @@ export class RideEngine {
     if(pinkOnly&&!allPassengersWomenVerified)fail("CUSTOMER_ELIGIBILITY","Pink Rider Only requires eligible verified passengers");
     if(mode!=="now" && !(typeof scheduledAt==="string"&&/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(scheduledAt)))
       fail("INVALID_SCHEDULE","Scheduled trip needs YYYY-MM-DDTHH:mm (local city time)");
+    if(mode!=="now")today(scheduledAt.slice(0,10));
     const quote=this.quote({cityId,service,distanceKm});
     const ride={id:randomUUID(),cityId,service,pickup:pickup.trim(),drop:drop.trim(),mode,leg,
       scheduledAt,monthlyPlanId,pinkOnly:!!pinkOnly,allPassengersWomenVerified:!!allPassengersWomenVerified,
@@ -147,6 +148,7 @@ export class RideEngine {
     if(data.childTrip)fail("CHILD_SERVICE_GATED","Child rides need separate approved workflow");
     if(!data.pickup?.trim()||!data.drop?.trim())fail("INVALID_ROUTE","Fixed pickup/drop required");
     if(data.service==="outstation" && !data.intercity)fail("OUTSTATION_ROUTE","Daily outstation requires a defined intercity route");
+    if(data.pinkOnly&&!data.allPassengersWomenVerified)fail("CUSTOMER_ELIGIBILITY","Pink Rider pack requires verified passenger eligibility");
     const base=this.quote(data);
     const legs=generateOccurrences(data);
     const total=money(base.farePaise*legs.length);

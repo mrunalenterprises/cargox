@@ -1,0 +1,9 @@
+name: cargox_demo
+description: Local-only CargoX API adapter. Never use for production identity or payments.
+publish_to: none
+version: 0.1.0
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
