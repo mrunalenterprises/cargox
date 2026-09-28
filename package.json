@@ -7,7 +7,7 @@
   "engines": {"node": ">=22"},
   "scripts": {
     "dev:demo": "node apps/demo/server.mjs",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test",
     "check:demo": "node --check packages/cargox_domain/src/index.mjs && node --check apps/demo/server.mjs && node --check apps/demo/public/app.js"
   }
 }
