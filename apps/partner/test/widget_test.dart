@@ -79,4 +79,24 @@ void main() {
     expect(find.text('Coming soon'), findsOneWidget);
     expect(find.text('Fresh selfie & anti-replay'), findsOneWidget);
   });
+  testWidgets('OTP accepts digits only and clears when the app is hidden',
+      (tester) async {
+    final api = FakeApi();
+    await tester.pumpWidget(app(PartnerTrip(
+        api: api,
+        partner: 'demo-auto-01',
+        initialRide: {...api.ride, 'state': 'ASSIGNED'})));
+    await tester.enterText(find.byType(TextField), '12a34');
+    await tester.pump();
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, '1234');
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await tester.pump();
+    expect(field.controller!.text, isEmpty);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(field.controller!.text, isEmpty);
+  });
 }
