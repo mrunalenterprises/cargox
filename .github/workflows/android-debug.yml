@@ -79,7 +79,8 @@ jobs:
           flutter build apk --debug \
             --dart-define=CARGOX_DEMO_API="$CARGOX_DEBUG_API" \
             --dart-define=PIPPIP_STAGING_URL="$PIPPIP_STAGING_URL" \
-            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY"
+            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY" \
+            --dart-define=PIPPIP_PHONE_PILOT=true
       - name: Validate output and record digest
         shell: bash
         run: |
@@ -105,7 +106,8 @@ jobs:
           flutter build apk --release --target-platform android-arm64 \
             --dart-define=CARGOX_DEMO_API="$CARGOX_DEBUG_API" \
             --dart-define=PIPPIP_STAGING_URL="$PIPPIP_STAGING_URL" \
-            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY"
+            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY" \
+            --dart-define=PIPPIP_PHONE_PILOT=true
       - name: Record compact phone QA digest
         shell: bash
         run: |
