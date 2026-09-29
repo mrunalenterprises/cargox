@@ -4,7 +4,11 @@ import 'dart:io';
 
 /// Read-only, public service-catalog client. This is NOT ride-booking transport.
 /// A missing/invalid config never silently falls back to the local demo.
-class PipPipStagingCatalog {
+abstract class StagingCatalogReader {
+  Future<List<PipPipStagingService>> availableServices();
+}
+
+class PipPipStagingCatalog implements StagingCatalogReader {
   PipPipStagingCatalog({
     String? projectUrl,
     String? publishableKey,
