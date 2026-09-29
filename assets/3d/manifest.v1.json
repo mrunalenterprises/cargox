@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0.0",
+  "status": "SPECIFICATION_ONLY",
+  "usage_note": "These IDs and paths are contracts. GLB, rendered WebP and licence files require original modelling, QA and commercial rights approval; not yet delivered.",
+  "renderer": "Flutter-compatible interactive glTF/GLB renderer selected after performance spike",
+  "vehicle_models": [
+    {
+      "id": "bike_commuter_v1",
+      "category": "BIKE",
+      "home_card": "bike",
+      "file_high": "assets/3d/models/bike_commuter_v1_lod0.glb",
+      "file_card": "assets/3d/models/bike_commuter_v1_lod1.glb",
+      "fallback": "assets/3d/renders/bike_commuter_v1_poster.webp",
+      "license": "PENDING"
+    },
+    {
+      "id": "auto_indian_v1",
+      "category": "AUTO",
+      "home_card": "auto",
+      "file_high": "assets/3d/models/auto_indian_v1_lod0.glb",
+      "file_card": "assets/3d/models/auto_indian_v1_lod1.glb",
+      "fallback": "assets/3d/renders/auto_indian_v1_poster.webp",
+      "license": "PENDING"
+    },
+    {
+      "id": "car_mini_v1",
+      "category": "MINI",
+      "home_card": "car",
+      "file_high": "assets/3d/models/car_mini_v1_lod0.glb",
+      "file_card": "assets/3d/models/car_mini_v1_lod1.glb",
+      "fallback": "assets/3d/renders/car_mini_v1_poster.webp",
+      "license": "PENDING"
+    },
+    {
+      "id": "car_sedan_v1",
+      "category": "SEDAN",
+      "home_card": "car",
+      "file_high": "assets/3d/models/car_sedan_v1_lod0.glb",
+      "file_card": "assets/3d/models/car_sedan_v1_lod1.glb",
+      "fallback": "assets/3d/renders/car_sedan_v1_poster.webp",
+      "license": "PENDING"
+    },
+    {
+      "id": "car_suv_v1",
+      "category": "SUV",
+      "home_card": "car",
+      "file_high": "assets/3d/models/car_suv_v1_lod0.glb",
+      "file_card": "assets/3d/models/car_suv_v1_lod1.glb",
+      "fallback": "assets/3d/renders/car_suv_v1_poster.webp",
+      "license": "PENDING"
+    }
+  ],
+  "service_model_mapping": {
+    "bike": [
+      "bike_commuter_v1"
+    ],
+    "auto": [
+      "auto_indian_v1"
+    ],
+    "car": [
+      "car_mini_v1",
+      "car_sedan_v1",
+      "car_suv_v1"
+    ],
+    "outstation": [
+      "car_sedan_v1",
+      "car_suv_v1"
+    ],
+    "shared_car": [
+      "car_sedan_v1",
+      "car_suv_v1"
+    ]
+  },
+  "requirements": {
+    "interactive_detail_orbit": true,
+    "home_animated_if_supported": true,
+    "reduced_motion_fallback": true,
+    "offline_fallback_from_same_mesh": true,
+    "licensed_original_mesh": true
+  }
+}
