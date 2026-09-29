@@ -6,9 +6,9 @@ Use the artifacts on the most recent **successful** workflow run, not an older A
 
 ## Installing without USB
 
-1. Download the separately named Customer and Partner artifacts and extract each ZIP.
-2. Compare each `app-debug.apk` to its accompanying `SHA256SUMS.txt`.
-3. Send the APKs to an Android phone and install using the normal Android permission prompt.
+1. For a compatible ARM64 Android phone, download the smaller `pip-pip-customer-phone-qa-arm64` and `pip-pip-partner-phone-qa-arm64` artifacts from the newest **successful** build. These contain `app-release.apk` and `ARM64_QA_SHA256SUMS.txt`. They use **temporary debug signing** despite the Android `release` filename and are not production/store APKs. On an incompatible phone, use the larger universal debug APK artifacts instead.
+2. Extract each ZIP and verify the APK against its accompanying SHA-256 file (`SHA256SUMS.txt` for debug; `ARM64_QA_SHA256SUMS.txt` for compact).
+3. Send each APK to an Android phone and install using the normal Android permission prompt. If Android rejects updating the older debug app due to a changed signing certificate, uninstall the older *fictional test* app and install the new one; note that uninstalling clears its local data.
 4. The existing local-demo Auto/Car request buttons still require an explicit local development server and are fictional. Do not assume they create real rides.
 
 ## Real online connectivity check
