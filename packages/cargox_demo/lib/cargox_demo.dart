@@ -61,8 +61,8 @@ class LocalDemoApi implements DemoApi {
       })()
           .timeout(const Duration(seconds: 10));
     } on SocketException {
-      throw const DemoFailure(
-        'Local API unavailable. Start npm run dev:demo and use adb reverse tcp:4173 tcp:4173 on Android.',
+      throw DemoFailure(
+        demoConnectionMessage(base),
       );
     } on TimeoutException {
       throw const DemoFailure(
@@ -86,3 +86,16 @@ class DemoFailure implements Exception {
 String rupees(num paise) => 'INR ${(paise / 100).toStringAsFixed(2)}';
 String civilDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+ 
+/// A phone can browse preview screens without exposing the local demo publicly.
+/// The exact configured port is reported; no USB instruction is hard-coded.
+String demoConnectionMessage(Uri origin) {
+  return 'Demo connection unavailable. Offline screens still work. '
+      'Booking requires the local development server on port ${origin.port}. '
+      'This debug APK does not have an Internet booking service.';
+}
+
+bool isDemoConnectionFailure(Object error) =>
+    error is DemoFailure &&
+    error.message.startsWith('Demo connection unavailable.');
