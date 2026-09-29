@@ -117,7 +117,11 @@ class _PartnerHomeState extends State<PartnerHome> {
       accepted = Map<String, dynamic>.from(await widget.api
           .post('/api/rides/${offer['id']}/accept', {'partnerId': partner}));
     } catch (e) {
-      if (mounted) setState(() => error = '$e');
+      // Offer rejection is an immediate action result; display it once, in-view.
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -139,6 +143,7 @@ class _PartnerHomeState extends State<PartnerHome> {
         const DemoNotice(
             text: 'LOCAL PREVIEW • No real rides, identity checks or payouts.'),
         DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: partner,
             decoration: const InputDecoration(labelText: 'Demo Partner'),
             items: const [
