@@ -287,3 +287,163 @@ class _Shine extends CustomPainter {
   @override
   bool shouldRepaint(_Shine oldDelegate) => oldDelegate.progress != progress;
 }
+
+ 
+/// Compact, readable first-screen hero shared by the two Android previews.
+/// Artwork is a lightweight *vector illustration*, not a claimed 3D model.
+class PipPipHero extends StatelessWidget {
+  const PipPipHero({
+    super.key,
+    required this.headline,
+    required this.vehicle,
+    this.eyebrow = 'PIP PIP · YOUR CITY, YOUR WAY',
+    this.description = 'A better journey starts here.',
+    this.pink = false,
+  });
+  final String headline, eyebrow, description, vehicle;
+  final bool pink;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 510 &&
+              MediaQuery.textScalerOf(context).scale(18) <= 25;
+          final accent = pink ? CargoXColors.pink : CargoXColors.ink;
+          final illustration = ExcludeSemantics(
+            child: SizedBox(
+              width: wide ? 260 : 134,
+              height: wide ? 142 : 80,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: VehicleArt(kind: vehicle, pink: pink),
+              ),
+            ),
+          );
+          final copy = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(eyebrow,
+                  style: TextStyle(
+                      color: accent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5)),
+              const SizedBox(height: 12),
+              Text(headline,
+                  style: TextStyle(
+                      color: CargoXColors.ink,
+                      fontSize: wide ? 32 : 27,
+                      height: 1.1,
+                      fontWeight: FontWeight.w900)),
+              const SizedBox(height: 10),
+              Text(description,
+                  style: const TextStyle(
+                      color: Color(0xFF365D50),
+                      fontSize: 13,
+                      height: 1.35,
+                      fontWeight: FontWeight.w500)),
+            ],
+          );
+          return Semantics(
+            container: true,
+            label: '$headline. $description',
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                    color: pink
+                        ? const Color(0xFFF1C6D6)
+                        : const Color(0xFFC6E5DA)),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: pink
+                      ? [const Color(0xFFFFF5FA), const Color(0xFFFFDFED)]
+                      : [const Color(0xFFF3FFF9), const Color(0xFFBDEADD)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                      color: accent.withValues(alpha: .07),
+                      offset: const Offset(0, 9),
+                      blurRadius: 24),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: wide
+                    ? Row(
+                        children: [
+                          Expanded(child: copy),
+                          const SizedBox(width: 10),
+                          illustration,
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Align(
+                              alignment: Alignment.centerRight,
+                              child: illustration),
+                          const SizedBox(height: 4),
+                          copy,
+                        ],
+                      ),
+              ),
+            ),
+          );
+        },
+      );
+}
+
+/// One concise, non-alarming offline state rather than duplicate error banners.
+/// This does not claim an unauthenticated local API works over mobile Internet.
+class PipPipOfflineNotice extends StatelessWidget {
+  const PipPipOfflineNotice({super.key, this.details});
+  final String? details;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        liveRegion: true,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF8E8),
+            border: Border.all(color: const Color(0xFFE6D7AD)),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  color: Color(0xFF725B2C)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Explore offline',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: CargoXColors.ink)),
+                    const SizedBox(height: 4),
+                    const Text(
+                        'You can view the app without a cable. Demo ride offers need a connected development server; live booking is not yet available.',
+                        style: TextStyle(
+                            color: CargoXColors.ink, height: 1.4)),
+                    if (details != null) ...[
+                      const SizedBox(height: 6),
+                      Text(details!,
+                          style: const TextStyle(
+                              fontSize: 12, color: Color(0xFF675A41))),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
