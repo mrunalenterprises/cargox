@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'vehicle_art.dart';
 export 'vehicle_art.dart';
+export 'online_pilot.dart';
 
 /// Product-facing names shared by every Flutter surface.
 ///
