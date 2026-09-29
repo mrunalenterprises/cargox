@@ -13,6 +13,8 @@ abstract final class PipPipBrand {
   static const customerApp = 'PIP PIP Customer';
   static const partnerApp = 'PIP PIP Partner';
   static const localDemo = 'Local Demo';
+  // Phone QA builds show online status without attempting a localhost demo.
+  static const phonePilot = bool.fromEnvironment('PIPPIP_PHONE_PILOT', defaultValue: false);
 }
 
 class CargoXColors {
