@@ -40,4 +40,14 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('offline connection message reports the configured port without USB claims', () {
+    final message = demoConnectionMessage(Uri.parse('http://127.0.0.1:4174'));
+    expect(message, contains('4174'));
+    expect(message, contains('Offline screens still work'));
+    expect(message, isNot(contains('adb reverse')));
+    expect(isDemoConnectionFailure(DemoFailure(message)), isTrue);
+    expect(isDemoConnectionFailure(const DemoFailure('Quote not allowed')), isFalse);
+  });
+
 }
