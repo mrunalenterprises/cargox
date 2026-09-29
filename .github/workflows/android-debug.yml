@@ -57,6 +57,22 @@ jobs:
       - name: Run widget regressions
         working-directory: apps/${{ matrix.app }}
         run: flutter test
+      - name: Verify read-only pilot HTTPS endpoint
+        shell: bash
+        run: |
+          response="$(curl --fail --silent --show-error --max-time 20 \\
+            -H "apikey: $PIPPIP_STAGING_PUBLISHABLE_KEY" \\
+            -H 'Accept: application/json' \\
+            "$PIPPIP_STAGING_URL/rest/v1/mobile_city_catalog?select=city,timezone,service")"
+          PILOT_JSON="$response" node -e '
+            const items=JSON.parse(process.env.PILOT_JSON);
+            if(!Array.isArray(items) ||
+               !items.every(x=>typeof x.city==="string" &&
+                                typeof x.timezone==="string" &&
+                                typeof x.service==="string"))
+              throw new Error("Invalid public catalog response");
+            console.log("HTTPS staging catalog reachable; approved rows: "+items.length);
+          '
       - name: Build explicitly local-only Android debug APK
         working-directory: apps/${{ matrix.app }}
         run: |
