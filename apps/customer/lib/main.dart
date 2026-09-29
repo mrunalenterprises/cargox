@@ -36,13 +36,13 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) =>
       CargoXPage(title: PipPipBrand.name, children: [
-        const VehicleArt(kind: 'car'),
-        Text(copy[language]![0],
-            style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: CargoXColors.ink)),
-        const DemoNotice(),
+        PipPipHero(
+          headline: copy[language]![0],
+          vehicle: 'car',
+          description: 'Explore the city with PIP PIP. Powered by ${PipPipBrand.company}.',
+        ),
+        const DemoNotice(
+            text: 'OFFLINE PREVIEW • Browse safely. Live rides and payments are not active.'),
         if (step == 0) ...[
           const Text(
               'Choose your language • Detailed demo screens currently use English fallback.'),
@@ -99,32 +99,12 @@ class CustomerHome extends StatelessWidget {
             onPressed: () => openCargoX(context, RideHistory(api: api)),
             icon: const Icon(Icons.history)),
       ], children: [
-        Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF5FFF9), CargoXColors.primary])),
-            child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('YOUR CITY. YOUR WAY.',
-                      style: TextStyle(
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.w700,
-                          color: CargoXColors.ink)),
-                  SizedBox(height: 12),
-                  Text('A little more joy\nin every journey.',
-                      style: TextStyle(
-                          fontSize: 32,
-                          height: 1.1,
-                          fontWeight: FontWeight.w900,
-                          color: CargoXColors.ink)),
-                  VehicleArt(kind: 'car'),
-                  Text('Chhatrapati Sambhajinagar · Local demo'),
-                ])),
+        const PipPipHero(
+          headline: 'A little more joy in every journey.',
+          eyebrow: 'YOUR CITY · YOUR WAY',
+          vehicle: 'car',
+          description: 'Chhatrapati Sambhajinagar · Local preview',
+        ),
         const Text('Where to next?',
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
         LayoutBuilder(builder: (context, constraints) {
