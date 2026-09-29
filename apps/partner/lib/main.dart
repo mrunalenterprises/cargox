@@ -22,12 +22,14 @@ class PartnerEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       CargoXPage(title: PipPipBrand.partnerApp, children: [
-        const VehicleArt(kind: 'auto'),
-        const Text('A better shift starts here.',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+        const PipPipHero(
+          headline: 'A better shift starts here.',
+          eyebrow: 'PIP PIP · PARTNER PREVIEW',
+          vehicle: 'auto',
+          description: 'Drive your day with ${PipPipBrand.company}.',
+        ),
         const DemoNotice(
-            text:
-                'Demo sign-in • SMS OTP and live registration are not connected. Choose a fictional driver fixture to test rides.'),
+            text: 'Preview only • No real registration, identity checks or payments.'),
         FilledButton(
             onPressed: () => replaceCargoX(context, PartnerHome(api: api)),
             child: const Text('Enter partner demo')),
@@ -98,11 +100,7 @@ class _PartnerHomeState extends State<PartnerHome> {
               .toList();
         });
     } catch (e) {
-      if (mounted) {
-        setState(() => error = '$e');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$e')));
-      }
+      if (mounted) setState(() => error = '$e');
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -119,11 +117,7 @@ class _PartnerHomeState extends State<PartnerHome> {
       accepted = Map<String, dynamic>.from(await widget.api
           .post('/api/rides/${offer['id']}/accept', {'partnerId': partner}));
     } catch (e) {
-      if (mounted) {
-        setState(() => error = '$e');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$e')));
-      }
+      if (mounted) setState(() => error = '$e');
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -136,13 +130,14 @@ class _PartnerHomeState extends State<PartnerHome> {
   @override
   Widget build(BuildContext context) =>
       CargoXPage(title: PipPipBrand.partnerApp, children: [
-        const Text('Drive your day.',
-            style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                color: CargoXColors.ink)),
-        const VehicleArt(kind: 'auto'),
-        const DemoNotice(),
+        const PipPipHero(
+          headline: 'Drive your day.',
+          eyebrow: 'YOUR RIDE PARTNER',
+          vehicle: 'auto',
+          description: 'Preview the driver experience, even without a test server.',
+        ),
+        const DemoNotice(
+            text: 'LOCAL PREVIEW • No real rides, identity checks or payouts.'),
         DropdownButtonFormField<String>(
             initialValue: partner,
             decoration: const InputDecoration(labelText: 'Demo Partner'),
@@ -162,14 +157,17 @@ class _PartnerHomeState extends State<PartnerHome> {
                     });
                     refresh();
                   }),
-        if (error != null) DemoNotice(text: error!),
+        if (error != null)
+          isDemoConnectionFailure(DemoFailure(error!))
+              ? const PipPipOfflineNotice()
+              : DemoNotice(text: error!),
         OutlinedButton.icon(
             onPressed: busy ? null : refresh,
             icon: const Icon(Icons.refresh),
             label: Text(busy ? 'Loading…' : 'Refresh eligible offers')),
         Text('Ride offers (${offers.length})',
             style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
-        if (!busy && offers.isEmpty)
+        if (!busy && error == null && offers.isEmpty)
           const Text(
               'No eligible offers. Create an Auto or Car request in the Customer app.'),
         for (final ride in offers)
