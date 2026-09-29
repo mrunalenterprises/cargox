@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 class FakeApi implements DemoApi {
   String state = 'REQUESTED';
   bool reject = false;
+  bool offline = false;
   int requests = 0;
   Map<String, dynamic> get ride => {
         'id': 'test-ride',
@@ -17,8 +18,13 @@ class FakeApi implements DemoApi {
         'quote': {'farePaise': 13600}
       };
   @override
-  Future<dynamic> get(String path) async =>
-      path.startsWith('/api/offers') ? [ride] : [];
+  Future<dynamic> get(String path) async {
+    if (offline) {
+      throw DemoFailure(
+          demoConnectionMessage(Uri.parse('http://127.0.0.1:4174')));
+    }
+    return path.startsWith('/api/offers') ? [ride] : [];
+  }
   @override
   Future<dynamic> post(String path, Map<String, Object?> body) async {
     requests++;
@@ -99,4 +105,25 @@ void main() {
     await tester.pump();
     expect(field.controller!.text, isEmpty);
   });
+  testWidgets('offline mobile preview shows one clear status and allows navigation',
+      (tester) async {
+    final api = FakeApi()..offline = true;
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(app(PartnerHome(api: api)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explore offline'), findsOneWidget);
+    expect(
+        find.text('No eligible offers. Create an Auto or Car request in the Customer app.'),
+        findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tapText(tester, 'Scheduled workload');
+    expect(find.text('Scheduled workload'), findsWidgets);
+  });
+
 }
