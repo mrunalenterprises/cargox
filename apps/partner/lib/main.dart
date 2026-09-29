@@ -30,6 +30,12 @@ class PartnerEntry extends StatelessWidget {
         ),
         const DemoNotice(
             text: 'Preview only • No real registration, identity checks or payments.'),
+        OutlinedButton.icon(
+          onPressed: () => openCargoX(
+              context, const PipPipOnlinePage(forPartner: true)),
+          icon: const Icon(Icons.cloud_outlined),
+          label: const Text('Check online pilot'),
+        ),
         FilledButton(
             onPressed: () => replaceCargoX(context, PartnerHome(api: api)),
             child: const Text('Enter partner demo')),
@@ -142,6 +148,12 @@ class _PartnerHomeState extends State<PartnerHome> {
         ),
         const DemoNotice(
             text: 'LOCAL PREVIEW • No real rides, identity checks or payouts.'),
+        OutlinedButton.icon(
+          onPressed: () => openCargoX(
+              context, const PipPipOnlinePage(forPartner: true)),
+          icon: const Icon(Icons.cloud_outlined),
+          label: const Text('Check online pilot'),
+        ),
         DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: partner,
