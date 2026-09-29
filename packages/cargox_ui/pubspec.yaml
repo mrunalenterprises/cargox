@@ -7,6 +7,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cargox_staging:
+    path: ../cargox_staging
 dev_dependencies:
   flutter_test:
     sdk: flutter
