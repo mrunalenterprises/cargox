@@ -60,9 +60,9 @@ jobs:
       - name: Verify read-only pilot HTTPS endpoint
         shell: bash
         run: |
-          response="$(curl --fail --silent --show-error --max-time 20 \\
-            -H "apikey: $PIPPIP_STAGING_PUBLISHABLE_KEY" \\
-            -H 'Accept: application/json' \\
+          response="$(curl --fail --silent --show-error --max-time 20 \
+            -H "apikey: $PIPPIP_STAGING_PUBLISHABLE_KEY" \
+            -H 'Accept: application/json' \
             "$PIPPIP_STAGING_URL/rest/v1/mobile_city_catalog?select=city,timezone,service")"
           PILOT_JSON="$response" node -e '
             const items=JSON.parse(process.env.PILOT_JSON);
