@@ -235,4 +235,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('opens online pilot without starting a demo ride', (tester) async {
+    await tester.pumpWidget(app(WelcomePage(api: FakeApi())));
+    await tester.pumpAndSettle();
+    await tapText(tester, 'Check online pilot');
+    expect(find.byType(PipPipOnlinePage), findsOneWidget);
+    expect(find.textContaining('Online catalog only'), findsOneWidget);
+  });
+
 }
