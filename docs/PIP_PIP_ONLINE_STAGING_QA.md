@@ -9,7 +9,7 @@ Use the artifacts on the most recent **successful** workflow run, not an older A
 1. For a compatible ARM64 Android phone, download the smaller `pip-pip-customer-phone-qa-arm64` and `pip-pip-partner-phone-qa-arm64` artifacts from the newest **successful** build. These contain `app-release.apk` and `ARM64_QA_SHA256SUMS.txt`. They use **temporary debug signing** despite the Android `release` filename and are not production/store APKs. On an incompatible phone, use the larger universal debug APK artifacts instead.
 2. Extract each ZIP and verify the APK against its accompanying SHA-256 file (`SHA256SUMS.txt` for debug; `ARM64_QA_SHA256SUMS.txt` for compact).
 3. Send each APK to an Android phone and install using the normal Android permission prompt. If Android rejects updating the older debug app due to a changed signing certificate, uninstall the older *fictional test* app and install the new one; note that uninstalling clears its local data.
-4. The existing local-demo Auto/Car request buttons still require an explicit local development server and are fictional. Do not assume they create real rides.
+4. In these standalone-phone builds, Auto/Car and subscription actions display explicit launch gates rather than making localhost booking calls. The Partner home does not auto-poll unreachable local offers. The desktop/USB development demo still has separate fictional booking behavior when built without the phone-pilot flag.
 
 ## Real online connectivity check
 
@@ -36,4 +36,4 @@ If the online page says it was not configured, ensure the APK came from the most
 
 ## Code separation
 
-The tested mobile read-only HTTP adapter is `packages/cargox_staging`. The shared pilot screen is `packages/cargox_ui/lib/online_pilot.dart`. Neither makes requests to the insecure fictional local demo or a privileged database endpoint.
+The phone artifacts are compiled with `PIPPIP_PHONE_PILOT=true`; do not confuse their real online catalog with the separately gated fictional local API. The tested mobile read-only HTTP adapter is `packages/cargox_staging`. The shared pilot screen is `packages/cargox_ui/lib/online_pilot.dart`. Neither makes requests to the insecure fictional local demo or a privileged database endpoint.
