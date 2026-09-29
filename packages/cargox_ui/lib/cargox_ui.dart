@@ -447,3 +447,4 @@ class PipPipOfflineNotice extends StatelessWidget {
           ),
         ),
       );
+}
