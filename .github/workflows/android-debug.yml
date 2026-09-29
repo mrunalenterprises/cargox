@@ -57,6 +57,9 @@ jobs:
       - name: Run widget regressions
         working-directory: apps/${{ matrix.app }}
         run: flutter test
+      - name: Verify standalone-phone mode does not call local demo
+        working-directory: apps/${{ matrix.app }}
+        run: flutter test test/phone_pilot_test.dart --dart-define=PIPPIP_PHONE_PILOT=true
       - name: Verify read-only pilot HTTPS endpoint
         shell: bash
         run: |
