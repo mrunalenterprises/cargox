@@ -222,4 +222,17 @@ void main() {
     await tapText(tester, 'Refresh trip status');
     expect(find.text('0421'), findsOneWidget);
   });
+  testWidgets('customer first screen is compact at phone width and large text',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(app(WelcomePage(api: FakeApi()), scale: 2));
+    await tester.pumpAndSettle();
+    expect(find.byType(PipPipHero), findsOneWidget);
+    expect(find.text('Move beautifully.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
 }
