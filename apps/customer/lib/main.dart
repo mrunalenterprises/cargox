@@ -12,7 +12,7 @@ class CustomerApp extends StatelessWidget {
   final DemoApi api;
   @override
   Widget build(BuildContext context) => MaterialApp(
-      title: '${PipPipBrand.customerApp} · ${PipPipBrand.localDemo}',
+      title: '${PipPipBrand.customerApp} · ${PipPipBrand.phonePilot ? 'Phone Pilot' : PipPipBrand.localDemo}',
       theme: cargoxTheme(),
       debugShowCheckedModeBanner: false,
       home: WelcomePage(api: api));
@@ -42,7 +42,9 @@ class _WelcomePageState extends State<WelcomePage> {
           description: 'Explore the city with PIP PIP. Powered by ${PipPipBrand.company}.',
         ),
         const DemoNotice(
-            text: 'OFFLINE PREVIEW • Browse safely. Live rides and payments are not active.'),
+            text: PipPipBrand.phonePilot
+                ? 'ONLINE PILOT • Internet status works. Ride booking and payments are not active.'
+                : 'OFFLINE PREVIEW • Browse safely. Live rides and payments are not active.'),
         OutlinedButton.icon(
           onPressed: () => openCargoX(context, const PipPipOnlinePage()),
           icon: const Icon(Icons.cloud_outlined),
@@ -137,13 +139,24 @@ class CustomerHome extends StatelessWidget {
                       label: item.$2,
                       vehicle: item.$1,
                       subtitle: ['auto', 'car'].contains(item.$1)
-                          ? 'Local demo · View quote'
+                          ? (PipPipBrand.phonePilot
+                              ? 'Pilot preview · Real booking pending'
+                              : 'Local demo · View quote')
                           : 'Coming soon · View details',
                       icon: Icons.directions_car,
                       onTap: () {
                         if (['auto', 'car'].contains(item.$1)) {
-                          openCargoX(
-                              context, BookingPage(api: api, service: item.$1));
+                          if (PipPipBrand.phonePilot) {
+                            openCargoX(context, const GatePage(
+                              title: 'Online booking',
+                              reason: 'The city and live service launch gates are '
+                                  'not enabled. OTP login, verified partners and '
+                                  'ride dispatch need activation and testing.',
+                            ));
+                          } else {
+                            openCargoX(context,
+                                BookingPage(api: api, service: item.$1));
+                          }
                         } else {
                           openCargoX(context, ServicePreview(service: item.$1));
                         }
