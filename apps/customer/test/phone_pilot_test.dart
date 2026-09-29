@@ -25,4 +25,21 @@ void main() {
     expect(api.calls, 0);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('phone mode auto card remains gated and never calls localhost',
+      (tester) async {
+    if (!PipPipBrand.phonePilot) return;
+    final api = CountingDemo();
+    await tester.pumpWidget(MaterialApp(
+      theme: cargoxTheme(), home: CustomerHome(api: api),
+    ));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Auto'), 200,
+      scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('Auto'));
+    await tester.pumpAndSettle();
+    expect(find.text('Online booking'), findsOneWidget);
+    expect(api.calls, 0);
+    expect(tester.takeException(), isNull);
+  });
+
 }
