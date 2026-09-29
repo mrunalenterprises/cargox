@@ -218,7 +218,18 @@ class CustomerHome extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(subtitle),
               trailing: const Icon(Icons.arrow_forward),
-              onTap: () => openCargoX(context, page)));
+              onTap: () {
+                final gated = PipPipBrand.phonePilot &&
+                    const ['Schedule Ride', 'Daily Services',
+                      'Monthly Packs', 'My Monthly Packs'].contains(title);
+                openCargoX(context, gated
+                    ? GatePage(
+                        title: title,
+                        reason: 'Online requests and monthly plans are not '
+                            'yet enabled in this isolated staging pilot.',
+                      )
+                    : page);
+              }));
 }
 
 class ServicePreview extends StatelessWidget {
