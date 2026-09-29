@@ -9,10 +9,20 @@ after(async()=>{await h?.db.close();});
 const rows=(n,table,extra={})=>h.as(claims(n,extra),async tx=>(await tx.query(`select * from public.${table}`)).rows);
 const review=(n,decision,extra={})=>h.rpc(staff(n),'review_partner_application',{application_id:a.id,decision,...extra});
 
-test('both real migration files apply and every app table has RLS',async()=>{
- assert.equal(h.files.length,2);
+test('the staging migration chain applies and every app table has RLS',async()=>{
+ // Require security-critical baseline and the additive, OFF-by-default catalog.
+ // Future additive migrations must not make this harness test stale.
+ for(const name of [
+  '20260928000100_cargox_phase1_schema.sql',
+  '20260929000100_staging_identity_onboarding.sql',
+  '20260929000200_mobile_public_catalog.sql',
+  '20260929000300_pippip_disabled_pilot_city.sql',
+  '20260929000400_staging_fk_indexes.sql'
+ ]) assert.ok(h.files.includes(name),'Missing reviewed migration: '+name);
  const tables=await h.db.query("select relname from pg_class c join pg_namespace n on c.relnamespace=n.oid where n.nspname in ('public','private') and c.relkind='r' and not c.relrowsecurity");
  assert.deepEqual(tables.rows,[]);
+ const online=await h.db.query('select * from public.mobile_city_catalog');
+ assert.deepEqual(online.rows,[],'Inactive pilot city must not appear in the public catalog');
 });
 test('anonymous database role cannot read profiles or call onboarding',async()=>{
  await denied(h.as({},tx=>tx.query('select * from public.profiles'),'anon'));
