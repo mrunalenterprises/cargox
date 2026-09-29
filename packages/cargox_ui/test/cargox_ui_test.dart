@@ -83,4 +83,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(presses, 1);
   });
+  testWidgets('mint hero and offline preview render on narrow Android widths',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 740);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(MaterialApp(
+      theme: cargoxTheme(),
+      home: Scaffold(
+        body: ListView(
+          padding: const EdgeInsets.all(12),
+          children: const [
+            PipPipHero(
+              headline: 'Drive your day.',
+              vehicle: 'auto',
+              description: 'Preview safely.',
+            ),
+            PipPipOfflineNotice(),
+          ],
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Drive your day.'), findsOneWidget);
+    expect(find.text('Explore offline'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
 }
