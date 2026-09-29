@@ -97,3 +97,29 @@ jobs:
             apps/${{ matrix.app }}/build/app/outputs/flutter-apk/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 5
+      - name: Build compact Android ARM64 phone QA APK
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          # Android Gradle currently signs release variants with temporary
+          # DEBUG keys. This is a smaller TEST APK, not a Play release.
+          flutter build apk --release --target-platform android-arm64 \
+            --dart-define=CARGOX_DEMO_API="$CARGOX_DEBUG_API" \
+            --dart-define=PIPPIP_STAGING_URL="$PIPPIP_STAGING_URL" \
+            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY"
+      - name: Record compact phone QA digest
+        shell: bash
+        run: |
+          out="apps/${{ matrix.app }}/build/app/outputs/flutter-apk"
+          test -s "$out/app-release.apk"
+          (cd "$out" && sha256sum app-release.apk > ARM64_QA_SHA256SUMS.txt)
+          ls -lh "$out/app-release.apk"
+          cat "$out/ARM64_QA_SHA256SUMS.txt"
+      - name: Publish compact ARM64 QA test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-pip-${{ matrix.app }}-phone-qa-arm64
+          path: |
+            apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-release.apk
+            apps/${{ matrix.app }}/build/app/outputs/flutter-apk/ARM64_QA_SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 5
