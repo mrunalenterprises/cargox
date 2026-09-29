@@ -126,4 +126,12 @@ void main() {
     expect(find.text('Scheduled workload'), findsWidgets);
   });
 
+  testWidgets('opens online pilot without starting a demo ride', (tester) async {
+    await tester.pumpWidget(app(PartnerEntry(api: FakeApi())));
+    await tester.pumpAndSettle();
+    await tapText(tester, 'Check online pilot');
+    expect(find.byType(PipPipOnlinePage), findsOneWidget);
+    expect(find.textContaining('Online catalog only'), findsOneWidget);
+  });
+
 }
