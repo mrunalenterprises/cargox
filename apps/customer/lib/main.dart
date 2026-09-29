@@ -43,6 +43,11 @@ class _WelcomePageState extends State<WelcomePage> {
         ),
         const DemoNotice(
             text: 'OFFLINE PREVIEW • Browse safely. Live rides and payments are not active.'),
+        OutlinedButton.icon(
+          onPressed: () => openCargoX(context, const PipPipOnlinePage()),
+          icon: const Icon(Icons.cloud_outlined),
+          label: const Text('Check online pilot'),
+        ),
         if (step == 0) ...[
           const Text(
               'Choose your language • Detailed demo screens currently use English fallback.'),
@@ -104,6 +109,11 @@ class CustomerHome extends StatelessWidget {
           eyebrow: 'YOUR CITY · YOUR WAY',
           vehicle: 'car',
           description: 'Chhatrapati Sambhajinagar · Local preview',
+        ),
+        OutlinedButton.icon(
+          onPressed: () => openCargoX(context, const PipPipOnlinePage()),
+          icon: const Icon(Icons.cloud_outlined),
+          label: const Text('Check online pilot'),
         ),
         const Text('Where to next?',
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
