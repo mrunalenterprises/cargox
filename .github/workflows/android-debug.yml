@@ -8,6 +8,7 @@ on:
       - 'apps/partner/**'
       - 'packages/cargox_demo/**'
       - 'packages/cargox_ui/**'
+      - 'packages/cargox_staging/**'
       - '.github/workflows/android-debug.yml'
 jobs:
   debug-apks:
@@ -23,6 +24,9 @@ jobs:
     env:
       # Loopback-only fictional test service. Never ship this build as a public app.
       CARGOX_DEBUG_API: http://127.0.0.1:4174
+      PIPPIP_STAGING_URL: https://ifnpbeozmbdofyczbvme.supabase.co
+      # This is the restricted public publishable key, NEVER a service-role key.
+      PIPPIP_STAGING_PUBLISHABLE_KEY: sb_publishable_ILGlC1HGsEEjK6C7cB_kJw_Z__QOMoT
     steps:
       - name: Checkout PIP PIP source
         uses: actions/checkout@v4
@@ -55,7 +59,11 @@ jobs:
         run: flutter test
       - name: Build explicitly local-only Android debug APK
         working-directory: apps/${{ matrix.app }}
-        run: flutter build apk --debug --dart-define=CARGOX_DEMO_API="$CARGOX_DEBUG_API"
+        run: |
+          flutter build apk --debug \
+            --dart-define=CARGOX_DEMO_API="$CARGOX_DEBUG_API" \
+            --dart-define=PIPPIP_STAGING_URL="$PIPPIP_STAGING_URL" \
+            --dart-define=PIPPIP_STAGING_PUBLISHABLE_KEY="$PIPPIP_STAGING_PUBLISHABLE_KEY"
       - name: Validate output and record digest
         shell: bash
         run: |
