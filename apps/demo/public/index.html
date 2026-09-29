@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#59BAA1"><meta name="description" content="PIP PIP local-only development demo — not a live ride booking service.">
+<title>PIP PIP · Passenger Mobility Demo</title><link rel="stylesheet" href="/styles.css" defer></head>
+<body>
+<div class="app-shell">
+ <header class="topbar">
+  <a class="logo" href="/" aria-label="PIP PIP demo home"><span class="logo-mark">PP</span><span>PIP PIP<small>Mrunal Technologies</small></span></a>
+  <span class="environment">LOCAL DEVELOPMENT DEMO · NOT LIVE</span>
+ </header>
+ <nav class="tabs" aria-label="Demo applications">
+  <button class="tab active" data-view="customer" type="button">✦ Customer</button>
+  <button class="tab" data-view="partner" type="button">◈ Driver / Partner</button>
+  <button class="tab" data-view="admin" type="button">▤ Admin</button>
+ </nav>
+ <main>
+  <section id="view-customer" class="view">
+   <div class="hero">
+    <div><span class="eyebrow">YOUR CITY. YOUR WAY.</span>
+      <h1>Move beautifully.<br><em>Go anywhere.</em></h1>
+      <p>City rides, daily commutes and a more thoughtful way to travel.</p>
+      <span class="location-pill">⌖ &nbsp; Chhatrapati Sambhajinagar <span class="small-dot"></span> DEMO CITY</span>
+    </div>
+    <div class="hero-art" aria-hidden="true"><div class="hero-disc"></div><span class="floating-car">🚕</span><span class="orbit-dot"></span></div>
+   </div>
+   <div class="section-heading"><div><span class="eyebrow">CHOOSE A RIDE</span><h2>Where to next?</h2></div><span class="caption">Tap a service card</span></div>
+   <div id="service-cards" class="service-grid" aria-live="polite"></div>
+   <article class="pink-feature">
+    <div class="pink-icon" aria-hidden="true">♀</div><div><span class="eyebrow">A LITTLE MORE CHOICE</span><h3>Pink Rider</h3>
+      <p>Choose an eligible opted-in woman driver when available. Your selection is never silently changed.</p></div>
+    <span class="pink-tag">HER CHOICE · YOUR CHOICE</span>
+   </article>
+   <div class="sub-grid">
+    <article class="tile"><span class="tile-icon">☀</span><div><h3>Daily Services</h3><p>Office, college and classes. Set your commute once.</p></div><a class="tile-link" href="#daily">Explore ↗</a></article>
+    <article class="tile"><span class="tile-icon">▦</span><div><h3>Monthly Ride Packs</h3><p>Fixed pickup & drop, selected weekdays and return trips.</p></div><a class="tile-link" href="#daily">Create plan ↗</a></article>
+   </div>
+   <div class="workarea">
+    <section class="form-panel" aria-label="Ride booking">
+     <div class="panel-top"><span class="eyebrow">BOOK A RIDE</span><span class="demo-chip">DEMO FARES</span></div><h2>Let's get moving</h2>
+     <form id="ride-form">
+      <label for="service">Ride service</label><select id="service" name="service" required><option value="auto">Auto Rickshaw</option><option value="car">Car</option></select>
+      <div class="field-row"><div><label for="pickup">Pickup</label><input id="pickup" required maxlength="100" value="Home"></div><div><label for="drop">Destination</label><input id="drop" required maxlength="100" value="Office"></div></div>
+      <div class="field-row"><div><label for="km">Demo distance (km)</label><input id="km" type="number" min="0.1" max="500" step="0.1" value="8" required></div>
+       <div><label for="mode">When?</label><select id="mode"><option value="now">Book Now</option><option value="schedule">Schedule Ride</option></select></div></div>
+      <div id="schedule-row" class="hidden"><label for="schedule">Date and pickup time (local)</label><input id="schedule" type="datetime-local"></div>
+      <label class="check"><input type="checkbox" id="verified-women">Demo: all passengers eligible / verified women</label>
+      <label class="check"><input type="checkbox" id="pink-only">Pink Rider Only — never substitute another driver</label>
+      <button class="primary-btn" type="submit">Request Demo Ride <span>→</span></button>
+     </form>
+     <p id="ride-result" role="status" class="status muted">No payment or real driver dispatch in this demo.</p>
+     <div id="customer-rides" aria-live="polite"></div>
+    </section>
+    <section class="form-panel" id="daily" aria-label="Recurring and monthly rides">
+     <div class="panel-top"><span class="eyebrow">REPEAT THE GOOD ROUTE</span><span class="demo-chip">UNPAID PREVIEW</span></div><h2>Daily & Monthly</h2>
+     <form id="pack-form">
+      <label for="purpose">Commute purpose</label><select id="purpose"><option>Office</option><option>College</option><option>Tuition / Classes</option><option>Other fixed route</option><option disabled>School — requires separate child-safety approval</option><option disabled>Outstation Daily Car — Coming Soon</option></select>
+      <label for="pack-service">Vehicle</label><select id="pack-service"><option value="auto">Auto</option><option value="car">Car</option></select>
+      <div class="field-row"><div><label for="pack-pickup">Fixed pickup</label><input required id="pack-pickup" value="Home"></div><div><label for="pack-drop">Fixed drop</label><input required id="pack-drop" value="Office"></div></div>
+      <div class="field-row"><div><label for="pack-km">Demo distance (km)</label><input id="pack-km" type="number" min=".1" max="500" step=".1" value="8" required></div>
+        <div><label for="pack-time">Pickup time</label><input id="pack-time" type="time" value="08:30" required></div></div>
+      <div class="field-row"><div><label for="pack-start">Start date</label><input id="pack-start" type="date" required></div><div><label for="pack-end">End date</label><input id="pack-end" type="date" required></div></div>
+      <fieldset><legend>Travel days</legend><div class="weekday" id="weekday">
+       <label><input type="checkbox" value="1" checked> M</label><label><input type="checkbox" value="2" checked> T</label>
+       <label><input type="checkbox" value="3" checked> W</label><label><input type="checkbox" value="4" checked> T</label>
+       <label><input type="checkbox" value="5" checked> F</label><label><input type="checkbox" value="6"> S</label><label><input type="checkbox" value="7"> S</label>
+      </div></fieldset>
+      <label class="check"><input type="checkbox" id="return-ride"> Pickup + return (each leg separate)</label>
+      <div id="return-row" class="hidden"><label for="return-time">Return pickup time</label><input id="return-time" type="time" value="18:00"></div>
+      <button class="secondary-btn" type="submit">Preview Monthly Pack <span>↗</span></button>
+      <p class="small-note">Preview only. Final pricing, holidays, refunds and partner availability must be approved before sales.</p>
+     </form><div id="pack-result" role="status" aria-live="polite"></div>
+    </section>
+   </div>
+  </section>
+  <section id="view-partner" class="view hidden" aria-label="Partner local demo">
+   <div class="mini-hero"><span class="eyebrow">PIP PIP DRIVER</span><h1>Ready for your next ride?</h1><p>Illustrative approved partner accounts, not real KYC records.</p></div>
+   <div class="form-panel partner-panel">
+    <label for="partner-id">Select demo partner</label>
+    <select id="partner-id"><option value="demo-auto-01">Demo Auto / Car Driver</option><option value="demo-pink-01">Demo Pink Rider (Women Only)</option></select>
+    <button class="secondary-btn" id="refresh-offers" type="button">Refresh eligible ride offers ↻</button>
+    <div id="offers" aria-live="polite"></div>
+    <div class="divider-line"></div><h2>Manage accepted ride</h2>
+    <label for="partner-ride-id">Ride ID</label><input id="partner-ride-id" placeholder="Paste assigned ride ID">
+    <label for="trip-code">4-digit trip start code</label><input id="trip-code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="From customer's assigned ride">
+    <div class="field-row"><button class="secondary-btn" id="start-ride" type="button">Verify & Start</button>
+      <button class="secondary-btn" id="finish-ride" type="button">Complete</button></div>
+    <p id="partner-result" role="status"></p>
+   </div>
+  </section>
+  <section id="view-admin" class="view hidden" aria-label="Admin local demo">
+   <div class="mini-hero"><span class="eyebrow">OPERATIONS OVERVIEW</span><h1>Every ride, in view.</h1><p>Local-only, unauthenticated demo dashboard. Live management is not implemented.</p></div>
+   <button class="secondary-btn refresh" id="refresh-admin" type="button">Refresh Demo Dashboard ↻</button>
+   <div id="admin-summary" class="admin-grid"></div>
+   <div class="form-panel"><h2>Admin launch gates</h2><p>Bike, Outstation and Shared Car remain off in the demo by default. School/child journeys and real payments cannot be activated here.</p><div id="admin-rides"></div></div>
+  </section>
+ </main>
+ <footer><strong>PIP PIP</strong><span>Crafted in Chhatrapati Sambhajinagar · A Mrunal Technologies concept</span><span>Build preview only — no live safety response or payments</span></footer>
+</div><script src="/app.js" type="module"></script></body></html>

@@ -1,0 +1,24 @@
+{
+  "name": "cargox-admin-local-preview",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PIP PIP local Admin preview.",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3001",
+    "build": "next build",
+    "typecheck": "next typegen && tsc --noEmit",
+    "start": "next start --hostname 127.0.0.1 --port 3001",
+    "check:sections": "node scripts/check-sections.cjs"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.0",
+    "@types/react": "19.2.0",
+    "@types/react-dom": "19.2.0",
+    "typescript": "5.9.2"
+  }
+}

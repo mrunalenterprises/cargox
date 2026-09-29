@@ -1,0 +1,14 @@
+{
+  "name": "cargox-workspace",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "PIP PIP Phase 1 passenger mobility clean start. Node demo is not a live ride platform.",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "dev:demo": "node apps/demo/server.mjs",
+    "test": "node --test tests/api.test.mjs tests/domain.test.mjs",
+    "test:staging": "npm --prefix apps/staging-api test",
+    "check:demo": "node --check packages/cargox_domain/src/index.mjs && node --check apps/demo/server.mjs && node --check apps/demo/public/app.js"
+  }
+}

@@ -1,0 +1,75 @@
+name: Passenger core tests
+on:
+  push:
+    branches: [main, feature/passenger-phase1-v1]
+  pull_request:
+jobs:
+  demo-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse and check runnable demo
+        run: npm run check:demo
+      - name: Run domain security and recurring-ride tests
+        run: npm test
+
+  flutter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [packages/cargox_demo, packages/cargox_staging, packages/cargox_ui, apps/customer, apps/partner]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the verified Flutter SDK release
+        uses: actions/checkout@v4
+        with:
+          repository: flutter/flutter
+          # A raw shallow commit checkout reports 0.0.0-unknown to pub on
+          # current hosted runners. The release tag preserves SDK metadata.
+          ref: 3.47.5
+          path: .flutter-sdk
+      - name: Add Flutter to PATH
+        run: echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+      - run: flutter --version
+      - run: flutter pub get
+        working-directory: ${{ matrix.package }}
+      - run: flutter analyze
+        working-directory: ${{ matrix.package }}
+      - run: flutter test
+        working-directory: ${{ matrix.package }}
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run check:sections
+      - run: npm run build
+
+  staging-foundation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/staging-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/staging-api/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test

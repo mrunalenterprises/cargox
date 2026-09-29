@@ -1,4 +1,6 @@
-# CARGOX — ONE-PROMPT MASTER BUILD CONTRACT
+# PIP PIP — ONE-PROMPT MASTER BUILD CONTRACT
+
+> **Brand update:** This historical technical filename remains stable. Product-facing references in this repository use **PIP PIP**, by **Mrunal Technologies**; legacy `CargoX` references below are historical contract or technical identifier text. See `docs/BRANDING.md`.
 Date: 2026-09-28
 Owner: Mrunal Technologies
 Purpose: paste the short bootstrap instruction below into VS Code Codex **once**; this file is the full execution specification.

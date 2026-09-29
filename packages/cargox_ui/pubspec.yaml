@@ -1,0 +1,14 @@
+name: cargox_ui
+description: Shared mint glossy visual components for PIP PIP (Flutter).
+publish_to: none
+version: 0.1.0
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  cargox_staging:
+    path: ../cargox_staging
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

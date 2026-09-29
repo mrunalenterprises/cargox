@@ -1,0 +1,9 @@
+name: cargox_staging
+description: Read-only online staging catalog adapter for PIP PIP. No live booking.
+publish_to: none
+version: 0.1.0
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -1,0 +1,21 @@
+name: cargox_partner
+description: PIP PIP driver/partner Flutter preview, connected to loopback-only local demo.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+dependencies:
+  cargox_demo:
+    path: ../../packages/cargox_demo
+  flutter:
+    sdk: flutter
+  cargox_ui:
+    path: ../../packages/cargox_ui
+flutter:
+  uses-material-design: true
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
