@@ -10,7 +10,7 @@ class PartnerApp extends StatelessWidget {
   final DemoApi api;
   @override
   Widget build(BuildContext context) => MaterialApp(
-      title: '${PipPipBrand.partnerApp} · ${PipPipBrand.localDemo}',
+      title: '${PipPipBrand.partnerApp} · ${PipPipBrand.phonePilot ? 'Phone Pilot' : PipPipBrand.localDemo}',
       theme: cargoxTheme(),
       debugShowCheckedModeBanner: false,
       home: PartnerEntry(api: api));
@@ -80,7 +80,7 @@ class _PartnerHomeState extends State<PartnerHome> {
   @override
   void initState() {
     super.initState();
-    refresh();
+    if (!PipPipBrand.phonePilot) refresh();
   }
 
   Future<void> refresh() async {
@@ -154,6 +154,13 @@ class _PartnerHomeState extends State<PartnerHome> {
           icon: const Icon(Icons.cloud_outlined),
           label: const Text('Check online pilot'),
         ),
+        if (PipPipBrand.phonePilot)
+          const DemoNotice(
+            text: 'ONLINE PILOT · This phone preview checks the secure '
+                'staging catalog. Real registration and ride offers will '
+                'open only after verified onboarding and city approval.',
+          )
+        else ...[
         DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: partner,
@@ -225,6 +232,7 @@ class _PartnerHomeState extends State<PartnerHome> {
                             initialRide: ride));
                     if (mounted) refresh();
                   })),
+        ],
         _link(
             context,
             'Scheduled workload',
