@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [packages/cargox_demo, packages/cargox_ui, apps/customer, apps/partner]
+        package: [packages/cargox_demo, packages/cargox_staging, packages/cargox_ui, apps/customer, apps/partner]
     steps:
       - uses: actions/checkout@v4
       - name: Check out the verified Flutter SDK release
