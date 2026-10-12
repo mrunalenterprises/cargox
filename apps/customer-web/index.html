@@ -12,7 +12,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-wrap">
-        <img class="brand-logo" src="./assets/loadin-logo.png" alt="LOADIN" data-brand-image />
+        <img class="brand-logo" src="./assets/loadin-logo.svg" alt="LOADIN" data-brand-image />
         <div class="brand-fallback" data-brand-fallback aria-label="LOADIN"><span>LOAD</span><b>IN</b></div>
         <button class="location-chip" type="button" aria-label="Current location">
           <span class="location-dot"></span>
@@ -34,6 +34,11 @@
   </div>
 
   <template id="homeTemplate">
+    <section class="city-status-bar" id="cityStatusBar">
+      <div><span class="status-dot"></span><strong>Service live in Chhatrapati Sambhaji Nagar</strong></div>
+      <small>Fare Lock + verified partners</small>
+    </section>
+
     <section class="hero-card">
       <div class="hero-copy">
         <span class="eyebrow">AI SMART BOOKING</span>
@@ -76,19 +81,19 @@
       <div class="section-heading"><div><span class="eyebrow dark">SERVICES</span><h2>What do you need today?</h2></div><small class="section-note">Tap any card</small></div>
       <div class="service-grid" id="serviceGrid">
         <button class="service-card" data-service="parcel" type="button">
-          <div class="service-visual parcel"><img src="./assets/parcel.png" alt="2-Wheeler Parcel" data-service-image="parcel" /><span class="service-fallback">▰</span></div>
+          <div class="service-visual parcel"><img src="./assets/parcel.svg" alt="2-Wheeler Parcel" data-service-image="parcel" /><span class="service-fallback">▰</span></div>
           <div><strong>2-Wheeler Parcel</strong><small>Small parcels & documents</small></div><span class="service-arrow">→</span>
         </button>
         <button class="service-card" data-service="loading" type="button">
-          <div class="service-visual loading"><img src="./assets/loading.png" alt="Loading Vehicle" data-service-image="loading" /><span class="service-fallback">▱</span></div>
+          <div class="service-visual loading"><img src="./assets/loading.svg" alt="Loading Vehicle" data-service-image="loading" /><span class="service-fallback">▱</span></div>
           <div><strong>Loading Vehicle</strong><small>3W, Tata Ace, Pickup & trucks</small></div><span class="service-arrow">→</span>
         </button>
         <button class="service-card" data-service="helper" type="button">
-          <div class="service-visual helper"><img src="./assets/helper.png" alt="Helper" data-service-image="helper" /><span class="service-fallback">♙</span></div>
+          <div class="service-visual helper"><img src="./assets/helper.svg" alt="Helper" data-service-image="helper" /><span class="service-fallback">♙</span></div>
           <div><strong>Helper</strong><small>Loading, unloading & lifting</small></div><span class="service-arrow">→</span>
         </button>
         <button class="service-card" data-service="shifting" type="button">
-          <div class="service-visual shifting"><img src="./assets/shifting.png" alt="Full Shifting" data-service-image="shifting" /><span class="service-fallback">⌂</span></div>
+          <div class="service-visual shifting"><img src="./assets/shifting.svg" alt="Full Shifting" data-service-image="shifting" /><span class="service-fallback">⌂</span></div>
           <div><strong>Full Shifting</strong><small>Pack, move & unpack</small></div><span class="service-arrow">→</span>
         </button>
       </div>
