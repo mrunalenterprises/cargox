@@ -29,6 +29,7 @@ begin
   if to_regprocedure('public.add_partner_booking_proof(uuid,text,text,text,numeric,numeric)') is null then raise exception 'Missing add_partner_booking_proof RPC'; end if;
   if to_regprocedure('public.advance_partner_booking(uuid,text,numeric,numeric)') is null then raise exception 'Missing advance_partner_booking RPC'; end if;
   if to_regprocedure('public.cancel_customer_booking(uuid,text)') is null then raise exception 'Missing cancel_customer_booking RPC'; end if;
+  if to_regprocedure('public.open_customer_support_case(uuid,text,text,text)') is null then raise exception 'Missing open_customer_support_case RPC'; end if;
 end
 $$;
 
@@ -55,6 +56,9 @@ begin
   if has_function_privilege('anon', 'public.cancel_customer_booking(uuid,text)', 'EXECUTE') then
     raise exception 'anon can execute cancel_customer_booking';
   end if;
+  if has_function_privilege('anon', 'public.open_customer_support_case(uuid,text,text,text)', 'EXECUTE') then
+    raise exception 'anon can execute open_customer_support_case';
+  end if;
 
   select string_agg(p.proname, ', ' order by p.proname)
     into insecure
@@ -63,7 +67,8 @@ begin
   where n.nspname = 'public'
     and p.proname in (
       'set_partner_availability','get_my_dispatch_offers','respond_to_dispatch_offer',
-      'add_partner_booking_proof','advance_partner_booking','cancel_customer_booking'
+      'add_partner_booking_proof','advance_partner_booking','cancel_customer_booking',
+      'open_customer_support_case'
     )
     and (
       not p.prosecdef
