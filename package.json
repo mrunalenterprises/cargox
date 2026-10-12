@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "preview": "node scripts/preview-server.mjs",
     "test": "node --test",
     "check:migrations": "node scripts/check-migrations.mjs",
     "check": "npm run check:migrations && npm test"
