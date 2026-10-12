@@ -2,12 +2,14 @@ import { demoStore } from './demo-store.js';
 
 const KEY='loadin.experience.v1';
 const ONBOARDING_STEPS=['PROFILE','PERSONAL_DOCS','SELFIE','VEHICLE','VEHICLE_DOCS','BANK','PRICING','FINAL_REVIEW'];
+let memory=null;
 
-function readStorage(){
-  try{const raw=globalThis.localStorage?.getItem(KEY);return raw?JSON.parse(raw):null}catch{return null}
-}
-function writeStorage(value){try{globalThis.localStorage?.setItem(KEY,JSON.stringify(value))}catch{}return structuredClone(value)}
 function seed(){return {onboarding:{completed:['PROFILE','PERSONAL_DOCS'],updated_at:new Date().toISOString()},notifications:[]}}
+function readStorage(){
+  try{const raw=globalThis.localStorage?.getItem(KEY);if(raw)return JSON.parse(raw)}catch{}
+  return memory?structuredClone(memory):null;
+}
+function writeStorage(value){memory=structuredClone(value);try{globalThis.localStorage?.setItem(KEY,JSON.stringify(value))}catch{}return structuredClone(value)}
 function state(){return readStorage()||writeStorage(seed())}
 function latestBooking(){const rows=demoStore.myBookings();return rows.find(b=>!['CANCELLED','FAILED'].includes(b.status))||rows[0]||null}
 function progressFor(status){return ({SEARCHING:12,ASSIGNED:28,PARTNER_ARRIVING:40,AT_PICKUP:52,IN_PROGRESS:72,COMPLETED:100,CANCELLED:0})[status]??18}
@@ -47,7 +49,7 @@ export const experienceStore={
   onboarding(){const s=state();return {steps:ONBOARDING_STEPS.map(code=>({code,done:s.onboarding.completed.includes(code)})),completed:s.onboarding.completed.length,total:ONBOARDING_STEPS.length,percent:Math.round(s.onboarding.completed.length/ONBOARDING_STEPS.length*100),updatedAt:s.onboarding.updated_at};},
   completeStep(code){if(!ONBOARDING_STEPS.includes(code))throw new Error('invalid_step');const s=state();if(!s.onboarding.completed.includes(code))s.onboarding.completed.push(code);s.onboarding.updated_at=new Date().toISOString();writeStorage(s);return this.onboarding();},
   resetOnboarding(){const s=state();s.onboarding={completed:['PROFILE','PERSONAL_DOCS'],updated_at:new Date().toISOString()};writeStorage(s);return this.onboarding();},
-  reset(){try{globalThis.localStorage?.removeItem(KEY)}catch{}return state();}
+  reset(){memory=null;try{globalThis.localStorage?.removeItem(KEY)}catch{}return state();}
 };
 
 export {ONBOARDING_STEPS};
