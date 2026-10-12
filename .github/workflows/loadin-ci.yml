@@ -13,6 +13,22 @@ jobs:
   health:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: loadin_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d loadin_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,5 +38,14 @@ jobs:
           node-version: '22'
       - name: Migration continuity
         run: node scripts/check-migrations.mjs
+      - name: Fresh database bootstrap
+        run: psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/fresh-db-bootstrap.sql
+      - name: Apply migrations on fresh database
+        run: |
+          set -euo pipefail
+          for file in supabase/migrations/*.sql; do
+            echo "Applying $file"
+            psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f "$file"
+          done
       - name: Domain tests
         run: npm test
