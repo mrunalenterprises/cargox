@@ -68,7 +68,7 @@ alter table public.admin_pricing_changes enable row level security;
 
 -- Public/customer clients may read currently active pricing guardrails so fare previews
 -- can explain protection/caps. Writes remain server/admin controlled.
-create policy if not exists pricing_guardrails_read_active
+create policy pricing_guardrails_read_active
   on public.pricing_guardrails
   for select
   using (is_active = true);
