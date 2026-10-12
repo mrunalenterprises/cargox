@@ -3,5 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {"test":"node --test"}
+  "scripts": {
+    "test": "node --test",
+    "check:migrations": "node scripts/check-migrations.mjs",
+    "check": "npm run check:migrations && npm test"
+  }
 }
