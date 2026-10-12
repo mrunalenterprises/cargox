@@ -2,68 +2,9 @@ import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = normalize(join(__dirname, '..'));
-const port = Number(process.env.PORT || 4173);
-
-const mime = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.mjs': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.json': 'application/json; charset=utf-8',
-};
-
-const routes = {
-  '/': '/preview/index.html',
-  '/customer': '/apps/customer-web/index.html',
-  '/partner': '/apps/partner-web/index.html',
-  '/admin': '/apps/admin-web/index.html',
-  '/fleet': '/apps/fleet-web/index.html',
-};
-
-function safePath(urlPath) {
-  const requested = routes[urlPath] || urlPath;
-  const clean = decodeURIComponent(requested.split('?')[0]);
-  const resolved = normalize(join(root, clean.replace(/^\/+/, '')));
-  if (!resolved.startsWith(root)) return null;
-  return resolved;
-}
-
-const server = http.createServer(async (req, res) => {
-  try {
-    let filePath = safePath(req.url || '/');
-    if (!filePath) {
-      res.writeHead(403).end('Forbidden');
-      return;
-    }
-
-    try {
-      const info = await stat(filePath);
-      if (info.isDirectory()) filePath = join(filePath, 'index.html');
-    } catch {}
-
-    const body = await readFile(filePath);
-    res.writeHead(200, {
-      'content-type': mime[extname(filePath).toLowerCase()] || 'application/octet-stream',
-      'cache-control': 'no-store',
-    });
-    res.end(body);
-  } catch (error) {
-    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end(`Not found\n${error.message}`);
-  }
-});
-
-server.listen(port, '127.0.0.1', () => {
-  console.log(`LOADIN preview running at http://127.0.0.1:${port}`);
-  console.log(`Customer: http://127.0.0.1:${port}/customer`);
-  console.log(`Partner : http://127.0.0.1:${port}/partner`);
-  console.log(`Admin   : http://127.0.0.1:${port}/admin`);
-  console.log(`Fleet   : http://127.0.0.1:${port}/fleet`);
-});
+const __dirname=dirname(fileURLToPath(import.meta.url));const root=normalize(join(__dirname,'..'));const port=Number(process.env.PORT||4173);
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.json':'application/json; charset=utf-8'};
+const routes={'/':'/preview/index.html','/website':'/apps/public-web/index.html','/customer':'/apps/customer-web/index.html','/partner':'/apps/partner-web/index.html','/admin':'/apps/admin-web/index.html','/fleet':'/apps/fleet-web/index.html'};
+function safePath(urlPath){const requested=routes[urlPath]||urlPath;const clean=decodeURIComponent(requested.split('?')[0]);const resolved=normalize(join(root,clean.replace(/^\/+/,'')));return resolved.startsWith(root)?resolved:null}
+const server=http.createServer(async(req,res)=>{try{let filePath=safePath(req.url||'/');if(!filePath)return res.writeHead(403).end('Forbidden');try{const info=await stat(filePath);if(info.isDirectory())filePath=join(filePath,'index.html')}catch{}const body=await readFile(filePath);res.writeHead(200,{'content-type':mime[extname(filePath).toLowerCase()]||'application/octet-stream','cache-control':'no-store'});res.end(body)}catch(error){res.writeHead(404,{'content-type':'text/plain; charset=utf-8'});res.end(`Not found\n${error.message}`)}});
+server.listen(port,'127.0.0.1',()=>{console.log(`LOADIN preview running at http://127.0.0.1:${port}`);console.log(`Website : http://127.0.0.1:${port}/website`);console.log(`Customer: http://127.0.0.1:${port}/customer`);console.log(`Partner : http://127.0.0.1:${port}/partner`);console.log(`Admin   : http://127.0.0.1:${port}/admin`);console.log(`Fleet   : http://127.0.0.1:${port}/fleet`)})
