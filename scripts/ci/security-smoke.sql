@@ -26,10 +26,13 @@ begin
   if to_regprocedure('public.set_partner_availability(boolean,numeric,numeric,numeric)') is null then raise exception 'Missing set_partner_availability RPC'; end if;
   if to_regprocedure('public.get_my_dispatch_offers()') is null then raise exception 'Missing get_my_dispatch_offers RPC'; end if;
   if to_regprocedure('public.respond_to_dispatch_offer(uuid,text)') is null then raise exception 'Missing respond_to_dispatch_offer RPC'; end if;
+  if to_regprocedure('public.add_partner_booking_proof(uuid,text,text,text,numeric,numeric)') is null then raise exception 'Missing add_partner_booking_proof RPC'; end if;
+  if to_regprocedure('public.advance_partner_booking(uuid,text,numeric,numeric)') is null then raise exception 'Missing advance_partner_booking RPC'; end if;
+  if to_regprocedure('public.cancel_customer_booking(uuid,text)') is null then raise exception 'Missing cancel_customer_booking RPC'; end if;
 end
 $$;
 
--- Privileged partner RPCs must never be callable by anon and must pin search_path.
+-- Auth-scoped mutation RPCs must never be callable by anon and must pin search_path.
 do $$
 declare
   insecure text;
@@ -43,13 +46,25 @@ begin
   if has_function_privilege('anon', 'public.respond_to_dispatch_offer(uuid,text)', 'EXECUTE') then
     raise exception 'anon can execute respond_to_dispatch_offer';
   end if;
+  if has_function_privilege('anon', 'public.add_partner_booking_proof(uuid,text,text,text,numeric,numeric)', 'EXECUTE') then
+    raise exception 'anon can execute add_partner_booking_proof';
+  end if;
+  if has_function_privilege('anon', 'public.advance_partner_booking(uuid,text,numeric,numeric)', 'EXECUTE') then
+    raise exception 'anon can execute advance_partner_booking';
+  end if;
+  if has_function_privilege('anon', 'public.cancel_customer_booking(uuid,text)', 'EXECUTE') then
+    raise exception 'anon can execute cancel_customer_booking';
+  end if;
 
   select string_agg(p.proname, ', ' order by p.proname)
     into insecure
   from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public'
-    and p.proname in ('set_partner_availability','get_my_dispatch_offers','respond_to_dispatch_offer')
+    and p.proname in (
+      'set_partner_availability','get_my_dispatch_offers','respond_to_dispatch_offer',
+      'add_partner_booking_proof','advance_partner_booking','cancel_customer_booking'
+    )
     and (
       not p.prosecdef
       or not exists (
@@ -59,7 +74,7 @@ begin
     );
 
   if insecure is not null then
-    raise exception 'Partner RPC security configuration invalid: %', insecure;
+    raise exception 'Auth-scoped RPC security configuration invalid: %', insecure;
   end if;
 end
 $$;
