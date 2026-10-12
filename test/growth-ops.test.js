@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {applyPromo,buildReferralReward,supportSla,partnerQualityCard,demandRecommendation,favouriteSummary} from '../apps/shared/growth-ops.js';
+test('promo respects percentage cap',()=>{const r=applyPromo({fare:1000,type:'PERCENT',value:20,maxDiscount:150});assert.equal(r.discount,150);assert.equal(r.payable,850)});
+test('referral waits for paid qualifying trip',()=>{assert.equal(buildReferralReward({qualifyingTripPaid:false}).status,'PENDING');assert.equal(buildReferralReward({qualifyingTripPaid:true,rewardAmount:125}).reward,125)});
+test('P0 support breaches after five minutes',()=>{const opened='2026-10-12T10:00:00Z';const r=supportSla({priority:'P0',openedAt:opened,now:'2026-10-12T10:06:00Z'});assert.equal(r.breached,true);assert.equal(r.escalateTo,'SUPER_ADMIN')});
+test('partner quality gives coaching hints',()=>{const r=partnerQualityCard({qualityScore:82,rating:4.2,onTimePercent:85,cancellationPercent:9,completedTrips:44});assert.equal(r.status,'GOOD');assert.equal(r.hints.length,3)});
+test('demand recommendation highlights shortage',()=>{const r=demandRecommendation({demand:12,supply:3,etaPressure:4});assert.ok(['HIGH','VERY_HIGH'].includes(r.level));assert.ok(r.score>=50)});
+test('favourite cannot bypass safety block',()=>{const r=favouriteSummary({completedTogether:5,qualityScore:95,safetyBlocked:true});assert.equal(r.eligible,false)})
