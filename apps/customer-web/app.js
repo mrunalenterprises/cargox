@@ -30,7 +30,7 @@ const state = {
   lastGoods: '',
   activeBooking: null,
   liveBookings: [],
-  backend: loadinData.configured ? 'READY' : 'DEMO',
+  backend: loadinData.mode,
   demand: { level: DEMAND_LEVEL.NORMAL, score: 56, supplyGap: 8, avgPickupEtaMin: 9 },
 };
 
@@ -64,7 +64,7 @@ function renderHome() {
   applyCityServiceAvailability();
   wireHome();
   const cityBar=document.querySelector('#cityStatusBar small');
-  if(cityBar)cityBar.textContent=loadinData.configured?'Live backend ready • Fare Lock + verified partners':'Demo mode • add Supabase config for live bookings';
+  if(cityBar)cityBar.textContent=loadinData.mode==='LIVE'?'Live backend • Fare Lock + verified partners':'End-to-end demo active • no OTP subscription required';
 }
 
 function applyCityServiceAvailability() {
@@ -124,24 +124,21 @@ function shortenEta(eta) { const match = eta.match(/(\d+)/); return match ? `${M
 
 async function confirmBooking(option, form) {
   const service=services[state.selectedService];
-  let live=null;
-  if(loadinData.configured){
-    try{
-      live=await loadinData.createBooking({cityCode:cityConfig.code,serviceCode:service.code,bookingMode:state.bookingTime==='schedule'?'SCHEDULED':'NOW',scheduledAt:form.scheduledAt,goodsDescription:form.goods,pickupAddress:form.pickup,dropAddress:form.drop,vehicleClass:service.vehicleType,lockedFare:option.fare,paymentMode:'ONLINE'});
-    }catch(error){toast(error.message==='login_required'?'Login is required before a live booking can be created.':`Live booking failed: ${error.message}`);return;}
-  }
-  state.activeBooking = { id: live?.id || `LDN-${Date.now().toString().slice(-6)}`, goods: form.goods, pickup: form.pickup, drop: form.drop, service: service.label, option, lockedFare: option.fare, status: live?.status || (state.selectedService === 'shifting' ? 'QUOTE REQUESTED' : 'MATCHING PARTNER'), scheduled: state.bookingTime === 'schedule' };
-  const results = document.querySelector('#resultsSection'); results.querySelector('.status-strip')?.remove(); const status = document.createElement('div'); status.className = 'status-strip'; status.innerHTML = `<strong>${state.activeBooking.status}</strong><br><span class="muted">${state.activeBooking.id} • ${option.vehicle} • ${money(option.fare)} Fare Locked • ${live?'Saved to live backend':'Demo booking'}.</span>`; results.prepend(status); toast(live?'Live booking created successfully.':state.selectedService === 'shifting' ? 'Shifting quote workflow started.' : 'LOADIN is matching the best verified partner.');
+  try{
+    const saved=await loadinData.createBooking({cityCode:cityConfig.code,serviceCode:service.code,bookingMode:state.bookingTime==='schedule'?'SCHEDULED':'NOW',scheduledAt:form.scheduledAt,goodsDescription:form.goods,pickupAddress:form.pickup,dropAddress:form.drop,vehicleClass:service.vehicleType,lockedFare:option.fare,paymentMode:loadinData.mode==='LIVE'?'ONLINE':'CASH'});
+    state.activeBooking = { id:saved.id, goods:form.goods, pickup:form.pickup, drop:form.drop, service:service.label, option, lockedFare:option.fare, status:saved.status, scheduled:state.bookingTime==='schedule' };
+    const results=document.querySelector('#resultsSection');results.querySelector('.status-strip')?.remove();const status=document.createElement('div');status.className='status-strip';status.innerHTML=`<strong>${state.activeBooking.status}</strong><br><span class="muted">${state.activeBooking.id} • ${option.vehicle} • ${money(option.fare)} Fare Locked • ${loadinData.mode==='LIVE'?'Saved to live backend':'Shared demo booking sent to Partner/Admin'}.</span>`;results.prepend(status);toast(loadinData.mode==='LIVE'?'Live booking created successfully.':'Demo booking created — open Partner App to accept it.');
+  }catch(error){toast(error.message==='login_required'?'Login is required before a live booking can be created.':`Booking failed: ${error.message}`)}
 }
 
 async function renderBookings() {
-  if(loadinData.configured){try{state.liveBookings=await loadinData.myBookings()}catch(error){toast(`Could not load live bookings: ${error.message}`)}}
-  const active = state.activeBooking ? `<div class="booking-row"><div><strong>${state.activeBooking.goods}</strong><small>${state.activeBooking.pickup} → ${state.activeBooking.drop} • ${state.activeBooking.service} • ${money(state.activeBooking.lockedFare)}</small></div><span class="tag">${state.activeBooking.status}</span></div>` : '';
+  try{state.liveBookings=await loadinData.myBookings()}catch(error){toast(`Could not load bookings: ${error.message}`)}
   const live=state.liveBookings.map(b=>`<div class="booking-row"><div><strong>${b.goods_description||b.service_code}</strong><small>${b.pickup_address} → ${b.drop_address} • ${money(Number(b.locked_fare||0))}</small></div><span class="tag">${b.status}</span></div>`).join('');
-  screen.innerHTML = `<span class="eyebrow dark">MY BOOKINGS</span><h1 class="screen-title">Your moves</h1><p class="muted">${loadinData.configured?'Live bookings from Supabase':'Demo mode — configure Supabase for live data'}.</p><section class="empty-card">${live||active||'<div class="booking-row"><div><strong>No bookings yet</strong><small>Your live bookings will appear here after login.</small></div></div>'}</section>`;
+  screen.innerHTML = `<span class="eyebrow dark">MY BOOKINGS</span><h1 class="screen-title">Your moves</h1><p class="muted">${loadinData.mode==='LIVE'?'Live Supabase data':'Shared demo data — Customer, Partner, Admin and Fleet stay in sync'}.</p><section class="empty-card">${live||'<div class="booking-row"><div><strong>No bookings yet</strong><small>Create a booking from Home.</small></div></div>'}</section>`;
 }
 
 function renderSupport() { screen.innerHTML = `<span class="eyebrow dark">SUPPORT</span><h1 class="screen-title">We stay with the trip.</h1><p class="muted">One trip, one support case, one owner — with active-trip priority.</p><section class="support-card"><h3>Need help?</h3><p class="muted">Safety and active-trip issues are prioritized automatically.</p><div class="support-actions"><button type="button" data-support="active">Active Trip Help</button><button type="button" data-support="payment">Payment / Fare</button><button type="button" data-support="damage">Damage / Proof</button><button type="button" data-support="sos">SOS / Safety</button></div></section>`; document.querySelectorAll('[data-support]').forEach((button) => button.addEventListener('click', () => toast(`${button.textContent} flow selected.`))); }
-function renderAccount() { const session=loadinData.session(); screen.innerHTML = `<span class="eyebrow dark">ACCOUNT</span><h1 class="screen-title">Your LOADIN account</h1><p class="muted">Backend: ${loadinData.configured?'Configured':'Demo'} • Session: ${session?'Signed in':'Not signed in'}</p><section class="profile-card"><div class="profile-line"><span>Profile</span><strong>${session?'Connected':'Login required'}</strong></div><div class="profile-line"><span>Favourite Partners</span><strong>—</strong></div><div class="profile-line"><span>Reliability</span><strong>—</strong></div><div class="profile-line"><span>Business Account</span><strong>—</strong></div><div class="profile-line"><span>Saved Addresses</span><strong>—</strong></div></section>`; }
+function renderAccount() { const session=loadinData.session(); screen.innerHTML = `<span class="eyebrow dark">ACCOUNT</span><h1 class="screen-title">Your LOADIN account</h1><p class="muted">Mode: ${loadinData.mode} • ${loadinData.mode==='DEMO'?'Test login active without OTP subscription':session?'Signed in':'Login required'}</p><section class="profile-card"><div class="profile-line"><span>Profile</span><strong>${loadinData.mode==='DEMO'?'Demo Customer':session?'Connected':'Login required'}</strong></div><div class="profile-line"><span>Favourite Partners</span><strong>—</strong></div><div class="profile-line"><span>Reliability</span><strong>Excellent</strong></div><div class="profile-line"><span>Business Account</span><strong>—</strong></div><div class="profile-line"><span>Saved Addresses</span><strong>—</strong></div></section>`; }
 
+loadinData.subscribe(()=>{if(state.route==='bookings')renderBookings()});
 render();
