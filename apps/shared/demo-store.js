@@ -1,54 +1,35 @@
 const STORAGE_KEY='loadin.demo.v1';
-
+const ACTIVE=new Set(['SEARCHING','ASSIGNED','PARTNER_ARRIVING','AT_PICKUP','IN_PROGRESS']);
 function now(){return new Date().toISOString()}
 function id(prefix){const raw=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;return `${prefix}-${raw}`}
-
-function seed(){return {
-  version:1,
-  partnerOnline:false,
-  bookings:[
-    {id:'LDN-DEMO-COMPLETE',customer_id:'DEMO-CUSTOMER',partner_id:'DEMO-PARTNER',vehicle_id:'DEMO-TATA-ACE',city_code:'CSN',service_code:'LOADING_VEHICLE',status:'COMPLETED',booking_mode:'NOW',scheduled_at:null,goods_description:'Office Material',pickup_address:'Cidco, Sambhaji Nagar',drop_address:'Waluj MIDC',vehicle_class:'TATA_ACE',fare_locked:true,locked_fare:780,customer_payment_mode:'CASH',created_at:new Date(Date.now()-86400000).toISOString(),updated_at:now(),completed_at:now()}
-  ],
-  offers:[],
-  events:[]
-}}
-
+function seed(){return {version:2,partnerOnline:false,bookings:[{id:'LDN-DEMO-COMPLETE',customer_id:'DEMO-CUSTOMER',partner_id:'DEMO-PARTNER',vehicle_id:'DEMO-TATA-ACE',city_code:'CSN',service_code:'LOADING_VEHICLE',status:'COMPLETED',booking_mode:'NOW',scheduled_at:null,goods_description:'Office Material',pickup_address:'Cidco, Sambhaji Nagar',drop_address:'Waluj MIDC',vehicle_class:'TATA_ACE',fare_locked:true,locked_fare:780,customer_payment_mode:'CASH',created_at:new Date(Date.now()-86400000).toISOString(),updated_at:now(),completed_at:now(),cancelled_at:null}],offers:[],events:[],proofs:[{id:'PRF-SEED',booking_id:'LDN-DEMO-COMPLETE',type:'DELIVERY_PHOTO',note:'Demo proof',created_at:now()}],supportCases:[],notifications:[]}}
 export function createDemoStore({storage=globalThis.localStorage}={}){
   let memory=seed();
-  function read(){
-    if(!storage)return structuredClone(memory);
-    try{const raw=storage.getItem(STORAGE_KEY);if(!raw){storage.setItem(STORAGE_KEY,JSON.stringify(memory));return structuredClone(memory)}return JSON.parse(raw)}catch{return structuredClone(memory)}
-  }
-  function write(next){
-    memory=structuredClone(next);
-    if(storage){try{storage.setItem(STORAGE_KEY,JSON.stringify(next))}catch{}}
-    return structuredClone(next);
-  }
+  function read(){if(!storage)return structuredClone(memory);try{const raw=storage.getItem(STORAGE_KEY);if(!raw){storage.setItem(STORAGE_KEY,JSON.stringify(memory));return structuredClone(memory)}const parsed=JSON.parse(raw);return {...seed(),...parsed,bookings:parsed.bookings||[],offers:parsed.offers||[],events:parsed.events||[],proofs:parsed.proofs||[],supportCases:parsed.supportCases||[],notifications:parsed.notifications||[]}}catch{return structuredClone(memory)}}
+  function write(next){memory=structuredClone(next);if(storage){try{storage.setItem(STORAGE_KEY,JSON.stringify(next))}catch{}}return structuredClone(next)}
   function mutate(fn){const s=read();fn(s);return write(s)}
   function reset(){memory=seed();if(storage){try{storage.removeItem(STORAGE_KEY)}catch{}}return read()}
-  function createBooking(input){
-    const booking={id:id('LDN'),customer_id:'DEMO-CUSTOMER',partner_id:null,vehicle_id:null,city_code:input.cityCode||'CSN',service_code:input.serviceCode,status:'SEARCHING',booking_mode:input.bookingMode||'NOW',scheduled_at:input.scheduledAt?new Date(input.scheduledAt).toISOString():null,goods_description:input.goodsDescription||'',pickup_address:input.pickupAddress||'',drop_address:input.dropAddress||'',vehicle_class:input.vehicleClass||null,fare_locked:true,locked_fare:Number(input.lockedFare||0),customer_payment_mode:input.paymentMode||'CASH',created_at:now(),updated_at:now(),completed_at:null,cancelled_at:null};
-    mutate(s=>{s.bookings.unshift(booking);s.offers.unshift({id:id('OFR'),booking_id:booking.id,partner_id:'DEMO-PARTNER',vehicle_id:'DEMO-TATA-ACE',wave:1,score:94.8,status:'OFFERED',offered_at:now(),expires_at:new Date(Date.now()+20*60*1000).toISOString(),responded_at:null});s.events.unshift({id:id('EVT'),booking_id:booking.id,type:'BOOKING_CREATED',created_at:now()})});
-    return structuredClone(booking);
-  }
+  function pushEvent(s,bookingId,type,meta={}){s.events.unshift({id:id('EVT'),booking_id:bookingId||null,type,meta,created_at:now()})}
+  function notify(s,audience,title,message,bookingId=null){s.notifications.unshift({id:id('NTF'),audience,title,message,booking_id:bookingId,read:false,created_at:now()})}
+  function createBooking(input){const booking={id:id('LDN'),customer_id:'DEMO-CUSTOMER',partner_id:null,vehicle_id:null,city_code:input.cityCode||'CSN',service_code:input.serviceCode,status:'SEARCHING',booking_mode:input.bookingMode||'NOW',scheduled_at:input.scheduledAt?new Date(input.scheduledAt).toISOString():null,goods_description:input.goodsDescription||'',pickup_address:input.pickupAddress||'',drop_address:input.dropAddress||'',vehicle_class:input.vehicleClass||null,fare_locked:true,locked_fare:Number(input.lockedFare||0),customer_payment_mode:input.paymentMode||'CASH',created_at:now(),updated_at:now(),completed_at:null,cancelled_at:null};mutate(s=>{s.bookings.unshift(booking);s.offers.unshift({id:id('OFR'),booking_id:booking.id,partner_id:'DEMO-PARTNER',vehicle_id:'DEMO-TATA-ACE',wave:1,score:94.8,status:'OFFERED',offered_at:now(),expires_at:new Date(Date.now()+20*60*1000).toISOString(),responded_at:null});pushEvent(s,booking.id,'BOOKING_CREATED');notify(s,'PARTNER','New LOADIN job',`${booking.pickup_address} → ${booking.drop_address}`,booking.id)});return structuredClone(booking)}
   function myBookings(){return read().bookings.filter(b=>b.customer_id==='DEMO-CUSTOMER')}
   function partnerBookings(){return read().bookings.filter(b=>b.partner_id==='DEMO-PARTNER')}
   function partnerOffers(){const s=read();return s.offers.filter(o=>o.partner_id==='DEMO-PARTNER'&&o.status==='OFFERED').map(o=>({...o,booking:s.bookings.find(b=>b.id===o.booking_id)||null}))}
-  function setPartnerOnline(online){mutate(s=>{s.partnerOnline=Boolean(online);s.events.unshift({id:id('EVT'),type:online?'PARTNER_ONLINE':'PARTNER_OFFLINE',created_at:now()})});return {partner_id:'DEMO-PARTNER',online_status:online?'ONLINE':'OFFLINE',updated_at:now()}}
-  function acceptOffer(bookingId){
-    let result=null;
-    mutate(s=>{const b=s.bookings.find(x=>x.id===bookingId);if(!b)throw new Error('booking_not_found');b.partner_id='DEMO-PARTNER';b.vehicle_id='DEMO-TATA-ACE';b.status='ASSIGNED';b.updated_at=now();for(const o of s.offers.filter(x=>x.booking_id===bookingId)){o.status=o.partner_id==='DEMO-PARTNER'?'ACCEPTED':'CANCELLED';o.responded_at=now()}s.events.unshift({id:id('EVT'),booking_id:bookingId,type:'PARTNER_ACCEPTED',created_at:now()});result={...b}});
-    return result;
-  }
-  function declineOffer(bookingId){mutate(s=>{for(const o of s.offers.filter(x=>x.booking_id===bookingId&&x.partner_id==='DEMO-PARTNER')){o.status='DECLINED';o.responded_at=now()}s.events.unshift({id:id('EVT'),booking_id:bookingId,type:'PARTNER_DECLINED',created_at:now()})});return true}
-  function setBookingStatus(bookingId,status){let result=null;mutate(s=>{const b=s.bookings.find(x=>x.id===bookingId);if(!b)throw new Error('booking_not_found');b.status=status;b.updated_at=now();if(status==='COMPLETED')b.completed_at=now();s.events.unshift({id:id('EVT'),booking_id:bookingId,type:`STATUS_${status}`,created_at:now()});result={...b}});return result}
-  function adminSnapshot(){
-    const s=read(),bookings=s.bookings;const completed=bookings.filter(b=>b.status==='COMPLETED');const active=bookings.filter(b=>!['COMPLETED','CANCELLED','FAILED'].includes(b.status));const gbv=bookings.reduce((a,b)=>a+Number(b.locked_fare||0),0);const commission=Math.round(completed.reduce((a,b)=>a+Number(b.locked_fare||0),0)*.15);
-    return {metrics:{bookings:bookings.length,active:active.length,completed:completed.length,cancelled:bookings.filter(b=>b.status==='CANCELLED').length,gbv,onlinePartners:s.partnerOnline?1:0,customers:1,pendingPayout:Math.round(completed.reduce((a,b)=>a+Number(b.locked_fare||0),0)*.85),netRevenue:commission,health:94},liveOps:active.map(b=>({id:b.id,type:b.status==='SEARCHING'?'Unassigned Booking':'Active Trip',route:`${b.pickup_address} → ${b.drop_address}`,severity:b.status==='SEARCHING'?'P1':'P2',status:b.status})),partners:[{id:'DEMO-PARTNER',name:'LOADIN Demo Partner',vehicle:'Tata Ace',quality:94,status:s.partnerOnline?'ACTIVE':'OFFLINE'}],bookings:bookings.map(b=>({id:b.id,service:b.service_code,fare:Number(b.locked_fare||0),status:b.status,pickup_address:b.pickup_address,drop_address:b.drop_address}))}
-  }
-  function fleetSnapshot(){const s=read();return {vehicles:[{id:'DEMO-TATA-ACE',type:'Tata Ace',status:s.partnerOnline?'ACTIVE':'OFFLINE',driver:'Demo Driver',util:72,docs:'Valid'}],drivers:[{id:'DEMO-PARTNER',name:'Demo Driver',phone:'98XXXXXX00',status:s.partnerOnline?'ONLINE':'OFFLINE',quality:94,vehicle:'DEMO-TATA-ACE'}],bookings:s.bookings.filter(b=>b.partner_id==='DEMO-PARTNER').map(b=>({...b,route:`${b.pickup_address} → ${b.drop_address}`,vehicle:b.vehicle_class||'Tata Ace',driver:'Demo Driver',fare:Number(b.locked_fare||0)}))}}
-  return {read,reset,createBooking,myBookings,partnerBookings,partnerOffers,setPartnerOnline,acceptOffer,declineOffer,setBookingStatus,adminSnapshot,fleetSnapshot};
+  function setPartnerOnline(online){mutate(s=>{s.partnerOnline=Boolean(online);pushEvent(s,null,online?'PARTNER_ONLINE':'PARTNER_OFFLINE')});return {partner_id:'DEMO-PARTNER',online_status:online?'ONLINE':'OFFLINE',updated_at:now()}}
+  function acceptOffer(bookingId){let result=null;mutate(s=>{const b=s.bookings.find(x=>x.id===bookingId);if(!b)throw new Error('booking_not_found');b.partner_id='DEMO-PARTNER';b.vehicle_id='DEMO-TATA-ACE';b.status='ASSIGNED';b.updated_at=now();for(const o of s.offers.filter(x=>x.booking_id===bookingId)){o.status=o.partner_id==='DEMO-PARTNER'?'ACCEPTED':'CANCELLED';o.responded_at=now()}pushEvent(s,bookingId,'PARTNER_ACCEPTED');notify(s,'CUSTOMER','Partner assigned','Demo Driver • Tata Ace',bookingId);result={...b}});return result}
+  function declineOffer(bookingId){mutate(s=>{for(const o of s.offers.filter(x=>x.booking_id===bookingId&&x.partner_id==='DEMO-PARTNER')){o.status='DECLINED';o.responded_at=now()}pushEvent(s,bookingId,'PARTNER_DECLINED')});return true}
+  function setBookingStatus(bookingId,status){const allowed=['SEARCHING','ASSIGNED','PARTNER_ARRIVING','AT_PICKUP','IN_PROGRESS','COMPLETED','CANCELLED','FAILED'];if(!allowed.includes(status))throw new Error('invalid_status');let result=null;mutate(s=>{const b=s.bookings.find(x=>x.id===bookingId);if(!b)throw new Error('booking_not_found');b.status=status;b.updated_at=now();if(status==='COMPLETED')b.completed_at=now();if(status==='CANCELLED')b.cancelled_at=now();pushEvent(s,bookingId,`STATUS_${status}`);notify(s,status==='COMPLETED'?'CUSTOMER':'CUSTOMER','Trip update',status.replaceAll('_',' '),bookingId);result={...b}});return result}
+  function cancelBooking(bookingId,reason='Customer cancelled'){let result=null;mutate(s=>{const b=s.bookings.find(x=>x.id===bookingId);if(!b)throw new Error('booking_not_found');if(['COMPLETED','CANCELLED'].includes(b.status))throw new Error('cannot_cancel');b.status='CANCELLED';b.cancelled_at=now();b.updated_at=now();for(const o of s.offers.filter(x=>x.booking_id===bookingId&&x.status==='OFFERED'))o.status='CANCELLED';pushEvent(s,bookingId,'CUSTOMER_CANCELLED',{reason});notify(s,'PARTNER','Booking cancelled',reason,bookingId);result={...b}});return result}
+  function addProof(bookingId,type,note=''){let proof=null;mutate(s=>{if(!s.bookings.some(b=>b.id===bookingId))throw new Error('booking_not_found');proof={id:id('PRF'),booking_id:bookingId,type,note,created_at:now()};s.proofs.unshift(proof);pushEvent(s,bookingId,`PROOF_${type}`)});return proof}
+  function proofsForBooking(bookingId){return read().proofs.filter(p=>p.booking_id===bookingId)}
+  function createSupportCase({bookingId,category='GENERAL',priority='P3',message=''}){let item=null;mutate(s=>{item={id:id('SUP'),booking_id:bookingId||null,customer_id:'DEMO-CUSTOMER',category,priority,status:'OPEN',message,owner:priority==='P0'?'SAFETY':'SUPPORT',created_at:now(),updated_at:now()};s.supportCases.unshift(item);pushEvent(s,bookingId,'SUPPORT_OPENED',{priority,category})});return item}
+  function supportCases(){return read().supportCases}
+  function resolveSupportCase(caseId){let item=null;mutate(s=>{const c=s.supportCases.find(x=>x.id===caseId);if(!c)throw new Error('support_case_not_found');c.status='RESOLVED';c.updated_at=now();item={...c}});return item}
+  function partnerEarnings(){return partnerBookings().filter(b=>b.status==='COMPLETED').map(b=>({booking_id:b.id,gross:Number(b.locked_fare||0),commission:Math.round(Number(b.locked_fare||0)*.15),amount:Math.round(Number(b.locked_fare||0)*.85),created_at:b.completed_at||b.updated_at}))}
+  function tripEvents(bookingId){return read().events.filter(e=>e.booking_id===bookingId)}
+  function adminSnapshot(){const s=read(),bookings=s.bookings;const completed=bookings.filter(b=>b.status==='COMPLETED');const active=bookings.filter(b=>ACTIVE.has(b.status));const gbv=bookings.reduce((a,b)=>a+Number(b.locked_fare||0),0);const completedFare=completed.reduce((a,b)=>a+Number(b.locked_fare||0),0);return {metrics:{bookings:bookings.length,active:active.length,completed:completed.length,cancelled:bookings.filter(b=>b.status==='CANCELLED').length,gbv,onlinePartners:s.partnerOnline?1:0,customers:1,pendingPayout:Math.round(completedFare*.85),netRevenue:Math.round(completedFare*.15),health:94,openSupport:s.supportCases.filter(c=>c.status==='OPEN').length},liveOps:active.map(b=>({id:b.id,type:b.status==='SEARCHING'?'Unassigned Booking':'Active Trip',route:`${b.pickup_address} → ${b.drop_address}`,severity:b.status==='SEARCHING'?'P1':'P2',status:b.status})),partners:[{id:'DEMO-PARTNER',name:'LOADIN Demo Partner',vehicle:'Tata Ace',quality:94,status:s.partnerOnline?'ACTIVE':'OFFLINE'}],bookings:bookings.map(b=>({id:b.id,service:b.service_code,fare:Number(b.locked_fare||0),status:b.status,pickup_address:b.pickup_address,drop_address:b.drop_address,partner_id:b.partner_id})),supportCases:s.supportCases}}
+  function fleetSnapshot(){const s=read();return {vehicles:[{id:'DEMO-TATA-ACE',type:'Tata Ace',status:s.partnerOnline?'ACTIVE':'OFFLINE',driver:'Demo Driver',util:72,docs:'Valid'}],drivers:[{id:'DEMO-PARTNER',name:'Demo Driver',phone:'98XXXXXX00',status:s.partnerOnline?'ONLINE':'OFFLINE',quality:94,vehicle:'DEMO-TATA-ACE'}],bookings:s.bookings.filter(b=>b.partner_id==='DEMO-PARTNER').map(b=>({...b,route:`${b.pickup_address} → ${b.drop_address}`,vehicle:b.vehicle_class||'Tata Ace',driver:'Demo Driver',fare:Number(b.locked_fare||0)})),earnings:partnerEarnings()}}
+  return {read,reset,createBooking,myBookings,partnerBookings,partnerOffers,setPartnerOnline,acceptOffer,declineOffer,setBookingStatus,cancelBooking,addProof,proofsForBooking,createSupportCase,supportCases,resolveSupportCase,partnerEarnings,tripEvents,adminSnapshot,fleetSnapshot};
 }
-
 export const demoStore=createDemoStore();
 export {STORAGE_KEY};
