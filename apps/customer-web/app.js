@@ -1,6 +1,26 @@
+import { SERVICE_CODE, SERVICE_STATUS, serviceCardState } from '../../src/domain/city-service-control.js';
+import { calculateDynamicFare, DEMAND_LEVEL } from '../../src/domain/dynamic-pricing.js';
+
+const polish = document.createElement('link');
+polish.rel = 'stylesheet';
+polish.href = './polish.css';
+document.head.appendChild(polish);
+
 const screen = document.querySelector('#screen');
 const homeTemplate = document.querySelector('#homeTemplate');
 const navItems = [...document.querySelectorAll('.nav-item')];
+
+const cityConfig = {
+  code: 'CSN',
+  enabled: true,
+  allowOutstationDrop: false,
+  services: [
+    { serviceCode: SERVICE_CODE.PARCEL_2W, status: SERVICE_STATUS.ACTIVE, allowedZones: ['CENTRAL', 'MIDC'], allowedVehicleTypes: ['BIKE'] },
+    { serviceCode: SERVICE_CODE.LOADING_VEHICLE, status: SERVICE_STATUS.ACTIVE, allowedZones: ['CENTRAL', 'MIDC'], allowedVehicleTypes: ['3W', 'TATA_ACE', 'PICKUP_8FT', 'PICKUP_9FT', 'TATA_407', 'TRUCK_14FT_PLUS'] },
+    { serviceCode: SERVICE_CODE.HELPER, status: SERVICE_STATUS.ACTIVE, allowedZones: ['CENTRAL', 'MIDC'] },
+    { serviceCode: SERVICE_CODE.FULL_SHIFTING, status: SERVICE_STATUS.ACTIVE, allowedZones: ['CENTRAL', 'MIDC'] },
+  ],
+};
 
 const state = {
   route: 'home',
@@ -8,18 +28,17 @@ const state = {
   selectedService: null,
   lastGoods: '',
   activeBooking: null,
+  demand: { level: DEMAND_LEVEL.NORMAL, score: 56, supplyGap: 8, avgPickupEtaMin: 9 },
 };
 
 const services = {
-  parcel: { label: '2-Wheeler Parcel', vehicle: 'Bike', baseFare: 149, eta: '7 min', active: true, maxWeightKg: 20 },
-  loading: { label: 'Loading Vehicle', vehicle: 'Tata Ace', baseFare: 489, eta: '11 min', active: true },
-  helper: { label: 'Helper', vehicle: '1 Helper', baseFare: 299, eta: '18 min', active: true },
-  shifting: { label: 'Full Shifting', vehicle: 'Verified Team + Vehicle', baseFare: 2199, eta: 'Inspection/quote', active: true },
+  parcel: { label: '2-Wheeler Parcel', code: SERVICE_CODE.PARCEL_2W, vehicle: 'Bike', vehicleType: 'BIKE', baseFare: 149, eta: '7 min', maxWeightKg: 20 },
+  loading: { label: 'Loading Vehicle', code: SERVICE_CODE.LOADING_VEHICLE, vehicle: 'Tata Ace', vehicleType: 'TATA_ACE', baseFare: 489, eta: '11 min' },
+  helper: { label: 'Helper', code: SERVICE_CODE.HELPER, vehicle: '1 Helper', vehicleType: null, baseFare: 299, eta: '18 min' },
+  shifting: { label: 'Full Shifting', code: SERVICE_CODE.FULL_SHIFTING, vehicle: 'Verified Team + Vehicle', vehicleType: null, baseFare: 2199, eta: 'Inspection/quote' },
 };
 
-const vehicleOptions = {
-  loading: ['3W Loader', 'Tata Ace', '8-ft Pickup', '9-ft Pickup', 'Tata 407', '14-ft+ Truck'],
-};
+const vehicleOptions = { loading: ['3W Loader', 'Tata Ace', '8-ft Pickup', '9-ft Pickup', 'Tata 407', '14-ft+ Truck'] };
 
 function setupAssetFallbacks() {
   const brand = document.querySelector('[data-brand-image]');
@@ -28,7 +47,6 @@ function setupAssetFallbacks() {
     img.addEventListener('error', () => img.classList.add('broken'), { once: true });
   });
 }
-
 setupAssetFallbacks();
 
 function money(value) {
@@ -44,12 +62,16 @@ function toast(message) {
   setTimeout(() => el.remove(), 2400);
 }
 
+function availabilityFor(serviceKey) {
+  const service = services[serviceKey];
+  return serviceCardState({ city: cityConfig, serviceCode: service.code, vehicleType: service.vehicleType, zoneCode: 'CENTRAL' });
+}
+
 function setRoute(route) {
   state.route = route;
   navItems.forEach((item) => item.classList.toggle('active', item.dataset.route === route));
   render();
 }
-
 navItems.forEach((item) => item.addEventListener('click', () => setRoute(item.dataset.route)));
 
 function render() {
@@ -62,7 +84,19 @@ function render() {
 function renderHome() {
   screen.replaceChildren(homeTemplate.content.cloneNode(true));
   setupAssetFallbacks();
+  applyCityServiceAvailability();
   wireHome();
+}
+
+function applyCityServiceAvailability() {
+  document.querySelectorAll('.service-card').forEach((card) => {
+    const status = availabilityFor(card.dataset.service);
+    card.dataset.unavailable = String(!status.enabled);
+    if (!status.enabled) {
+      card.dataset.badge = status.badge || 'Unavailable';
+      card.setAttribute('aria-disabled', 'true');
+    }
+  });
 }
 
 function wireHome() {
@@ -76,7 +110,8 @@ function wireHome() {
     card.classList.toggle('selected', card.dataset.service === state.selectedService);
     card.addEventListener('click', () => {
       const next = card.dataset.service;
-      if (!services[next]?.active) return toast(`${services[next].label} is Coming Soon in this city.`);
+      const availability = availabilityFor(next);
+      if (!availability.enabled) return toast(`${services[next].label}: ${availability.badge}.`);
       state.selectedService = next;
       serviceCards.forEach((item) => item.classList.toggle('selected', item === card));
       bookingHint.classList.remove('hidden');
@@ -105,8 +140,8 @@ function wireHome() {
     bookingHint.textContent = `AI suggestion: ${services[recommended].label}. ${recommendationHint(recommended)}`;
   });
 
-  document.querySelector('#voiceButton').addEventListener('click', () => toast('Voice input UI is ready; speech provider connection comes with backend integration.'));
-  document.querySelector('#photoButton').addEventListener('click', () => toast('Photo-assisted goods analysis slot is ready for AI upload integration.'));
+  document.querySelector('#voiceButton').addEventListener('click', () => toast('Voice booking UI ready for speech-provider connection.'));
+  document.querySelector('#photoButton').addEventListener('click', () => toast('Photo goods-analysis UI ready for AI upload connection.'));
   document.querySelector('#bookAgainButton').addEventListener('click', () => {
     state.selectedService = 'loading';
     goodsInput.value = 'Office material';
@@ -114,7 +149,7 @@ function wireHome() {
     document.querySelector('#dropInput').value = 'Waluj MIDC';
     serviceCards.forEach((item) => item.classList.toggle('selected', item.dataset.service === 'loading'));
     bookingHint.classList.remove('hidden');
-    bookingHint.textContent = 'Book Again uses the previous route/service but requests a fresh Fare Lock before confirmation.';
+    bookingHint.textContent = 'Book Again reuses route/service only; a fresh Fare Lock is calculated before confirmation.';
     showMatches();
   });
   document.querySelector('#findButton').addEventListener('click', showMatches);
@@ -139,9 +174,9 @@ function detectService(goods) {
 }
 
 function recommendationHint(serviceKey) {
-  if (serviceKey === 'parcel') return 'Best for small/light parcels. Oversized goods will be redirected to Loading Vehicle.';
+  if (serviceKey === 'parcel') return 'Best for small/light parcels. Oversized goods are redirected to Loading Vehicle.';
   if (serviceKey === 'helper') return 'Use when you need manpower only for loading, unloading or lifting.';
-  if (serviceKey === 'shifting') return 'Includes inventory, skilled team, packing workflow and quote/inspection when needed.';
+  if (serviceKey === 'shifting') return 'Includes inventory, skilled team, packing workflow and quote/inspection when required.';
   return `Vehicle range includes ${vehicleOptions.loading.join(', ')}.`;
 }
 
@@ -150,41 +185,49 @@ function validateBookingForm() {
   const pickup = document.querySelector('#pickupInput').value.trim();
   const drop = document.querySelector('#dropInput').value.trim();
   if (!goods || !pickup || !drop) return { ok: false, reason: 'Please enter goods, pickup and drop details.' };
-
   if (state.bookingTime === 'schedule') {
     const date = document.querySelector('#scheduleDate').value;
     const time = document.querySelector('#scheduleTime').value;
     if (!date || !time) return { ok: false, reason: 'Select schedule date and time.' };
     const scheduledAt = new Date(`${date}T${time}:00`);
-    if (!Number.isFinite(scheduledAt.getTime()) || scheduledAt.getTime() <= Date.now() + 15 * 60 * 1000) {
-      return { ok: false, reason: 'Scheduled booking must be at least 15 minutes from now.' };
-    }
+    if (!Number.isFinite(scheduledAt.getTime()) || scheduledAt.getTime() <= Date.now() + 15 * 60 * 1000) return { ok: false, reason: 'Scheduled booking must be at least 15 minutes from now.' };
   }
   return { ok: true, goods, pickup, drop };
+}
+
+function pricedFare(baseFare) {
+  return calculateDynamicFare({
+    baseFare,
+    demandLevel: state.demand.level,
+    demandScore: state.demand.score,
+    supplyGap: state.demand.supplyGap,
+    avgPickupEtaMin: state.demand.avgPickupEtaMin,
+    pricingConfig: { minMultiplier: 0.95, maxMultiplier: 1.2, maxFareIncreasePct: 20, allowDemandPricing: true },
+  });
 }
 
 function showMatches() {
   const validation = validateBookingForm();
   if (!validation.ok) return toast(validation.reason);
-
   state.lastGoods = validation.goods;
   if (!state.selectedService) state.selectedService = detectService(validation.goods);
-  if (!services[state.selectedService]?.active) return toast('This service is Coming Soon in this city.');
+  const availability = availabilityFor(state.selectedService);
+  if (!availability.enabled) return toast(`${services[state.selectedService].label}: ${availability.badge}.`);
 
   [...document.querySelectorAll('.service-card')].forEach((item) => item.classList.toggle('selected', item.dataset.service === state.selectedService));
-  const service = services[state.selectedService];
-  const rows = buildMatches(service);
+  const rows = buildMatches(services[state.selectedService]);
   const resultCards = document.querySelector('#resultCards');
   resultCards.innerHTML = rows.map((row, index) => `
-    <article class="result-card ${index === 0 ? 'best' : ''}">
+    <article class="result-card ${index === 0 ? 'best' : ''}" style="position:relative">
       <div>
         <span class="eyebrow dark">${row.label}</span>
         <h3>${row.vehicle}</h3>
         <p>${row.description}</p>
         <div class="result-meta"><span>★ ${row.rating}</span><span>${row.trips} trips</span><span>${row.onTime}% on-time</span><span>ETA ${row.eta}</span></div>
+        <div class="pricing-note">Demand ${row.pricing.appliedMultiplier}× • Max fare protection active</div>
       </div>
       <div class="result-price">
-        <div><strong>${money(row.fare)}</strong><small>Fare Locked</small></div>
+        <div><strong>${money(row.fare)}</strong><small>Fare Locked</small><span class="price-meta">Base ${money(row.pricing.baseFare)}</span></div>
         <button type="button" data-book-option="${index}">Book Now</button>
       </div>
     </article>`).join('');
@@ -195,17 +238,24 @@ function showMatches() {
 }
 
 function buildMatches(service) {
+  const aiPricing = pricedFare(service.baseFare);
+  const valuePricing = pricedFare(Math.max(99, service.baseFare - 35));
+  const fastPricing = pricedFare(service.baseFare + 45);
+
   if (state.selectedService === 'shifting') {
+    const compact = pricedFare(1849);
+    const priority = pricedFare(2499);
     return [
-      { label: 'AI BEST MATCH', vehicle: 'Verified Shifting Team', fare: service.baseFare, eta: 'Quote in 10 min', rating: '4.9', trips: '1.8k', onTime: 96, description: 'Skilled packing team, inventory checklist, condition proof and locked quote.' },
-      { label: 'BEST VALUE', vehicle: 'Compact Shifting Team', fare: 1849, eta: 'Quote in 15 min', rating: '4.7', trips: '920', onTime: 94, description: 'Suitable for smaller home/office moves with packing and loading support.' },
-      { label: 'FASTEST ARRIVAL', vehicle: 'Priority Shifting Team', fare: 2499, eta: 'Quote in 6 min', rating: '4.8', trips: '1.2k', onTime: 97, description: 'Priority inspection and faster team allocation.' },
+      { label: 'AI BEST MATCH', vehicle: 'Verified Shifting Team', fare: aiPricing.finalFare, pricing: aiPricing, eta: 'Quote in 10 min', rating: '4.9', trips: '1.8k', onTime: 96, description: 'Skilled packing team, inventory checklist, condition proof and locked quote.' },
+      { label: 'BEST VALUE', vehicle: 'Compact Shifting Team', fare: compact.finalFare, pricing: compact, eta: 'Quote in 15 min', rating: '4.7', trips: '920', onTime: 94, description: 'Suitable for smaller home/office moves with packing and loading support.' },
+      { label: 'FASTEST ARRIVAL', vehicle: 'Priority Shifting Team', fare: priority.finalFare, pricing: priority, eta: 'Quote in 6 min', rating: '4.8', trips: '1.2k', onTime: 97, description: 'Priority inspection and faster team allocation.' },
     ];
   }
+
   return [
-    { label: 'AI BEST MATCH', vehicle: service.vehicle, fare: service.baseFare, eta: service.eta, rating: '4.9', trips: '2.4k', onTime: 97, description: 'Best balance of suitability, ETA, partner quality, reliability and price.' },
-    { label: 'BEST VALUE', vehicle: service.vehicle, fare: Math.max(99, service.baseFare - 35), eta: addMinutes(service.eta, 5), rating: '4.7', trips: '1.6k', onTime: 94, description: 'Lower fare with a verified partner and strong completion history.' },
-    { label: 'FASTEST ARRIVAL', vehicle: service.vehicle, fare: service.baseFare + 45, eta: shortenEta(service.eta), rating: '4.8', trips: '1.9k', onTime: 96, description: 'Nearest suitable verified partner for the fastest pickup.' },
+    { label: 'AI BEST MATCH', vehicle: service.vehicle, fare: aiPricing.finalFare, pricing: aiPricing, eta: service.eta, rating: '4.9', trips: '2.4k', onTime: 97, description: 'Best balance of suitability, ETA, partner quality, reliability and price.' },
+    { label: 'BEST VALUE', vehicle: service.vehicle, fare: valuePricing.finalFare, pricing: valuePricing, eta: addMinutes(service.eta, 5), rating: '4.7', trips: '1.6k', onTime: 94, description: 'Lower fare with a verified partner and strong completion history.' },
+    { label: 'FASTEST ARRIVAL', vehicle: service.vehicle, fare: fastPricing.finalFare, pricing: fastPricing, eta: shortenEta(service.eta), rating: '4.8', trips: '1.9k', onTime: 96, description: 'Nearest suitable verified partner for the fastest pickup.' },
   ];
 }
 
@@ -220,6 +270,7 @@ function confirmBooking(option, form) {
     drop: form.drop,
     service: services[state.selectedService].label,
     option,
+    lockedFare: option.fare,
     status: state.selectedService === 'shifting' ? 'QUOTE REQUESTED' : 'MATCHING PARTNER',
     scheduled: state.bookingTime === 'schedule',
   };
@@ -233,7 +284,7 @@ function confirmBooking(option, form) {
 }
 
 function renderBookings() {
-  const active = state.activeBooking ? `<div class="booking-row"><div><strong>${state.activeBooking.goods}</strong><small>${state.activeBooking.pickup} → ${state.activeBooking.drop} • ${state.activeBooking.service}</small></div><span class="tag">${state.activeBooking.status}</span></div>` : '';
+  const active = state.activeBooking ? `<div class="booking-row"><div><strong>${state.activeBooking.goods}</strong><small>${state.activeBooking.pickup} → ${state.activeBooking.drop} • ${state.activeBooking.service} • ${money(state.activeBooking.lockedFare)}</small></div><span class="tag">${state.activeBooking.status}</span></div>` : '';
   screen.innerHTML = `<span class="eyebrow dark">MY BOOKINGS</span><h1 class="screen-title">Your moves</h1><p class="muted">Track current, scheduled and completed bookings.</p><section class="empty-card">${active}<div class="booking-row"><div><strong>Office Material</strong><small>Cidco → Waluj MIDC • Loading Vehicle</small></div><span class="tag">COMPLETED</span></div><div class="booking-row"><div><strong>12 Cartons</strong><small>Jalna Road → Shendra • Tata Ace</small></div><span class="tag">COMPLETED</span></div><div class="booking-row"><div><strong>Home Shifting</strong><small>Inspection requested • Full Shifting</small></div><span class="tag">QUOTE</span></div></section>`;
 }
 
