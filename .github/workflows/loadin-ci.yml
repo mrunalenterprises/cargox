@@ -63,6 +63,9 @@ jobs:
           grep -q "LOADIN Preview" /tmp/preview.html
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "LOADIN Customer"
+          curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
           curl -fsS http://127.0.0.1:4173/partner | grep -q "LOADIN Partner"
+          curl -fsS http://127.0.0.1:4173/partner-onboarding | grep -q "LOADIN Partner Onboarding"
           curl -fsS http://127.0.0.1:4173/admin | grep -q "LOADIN Admin"
+          curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
           curl -fsS http://127.0.0.1:4173/fleet | grep -q "LOADIN Fleet"
