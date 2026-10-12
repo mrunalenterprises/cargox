@@ -50,5 +50,8 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
     const qs=new URLSearchParams();Object.entries(filters).forEach(([k,v])=>qs.set(k,String(v)));
     return request(`/rest/v1/${encodeURIComponent(table)}?${qs}`,{method:'PATCH',body:patch,extraHeaders:{Prefer:'return=representation'}});
   }
-  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOutLocal,select,insert,update};
+  async function rpc(functionName,args={}){
+    return request(`/rest/v1/rpc/${encodeURIComponent(functionName)}`,{method:'POST',body:args});
+  }
+  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOutLocal,select,insert,update,rpc};
 }
