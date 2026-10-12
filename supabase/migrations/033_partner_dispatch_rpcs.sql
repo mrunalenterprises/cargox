@@ -139,14 +139,22 @@ begin
   end if;
 
   if v_offer.status <> 'OFFERED' then
-    raise exception 'offer_not_open' using errcode = '22023';
+    return jsonb_build_object(
+      'status',v_offer.status,
+      'offer_id',v_offer.id,
+      'booking_id',v_offer.booking_id
+    );
   end if;
 
   if v_offer.expires_at <= now() then
     update public.booking_dispatch_offers
        set status = 'EXPIRED', responded_at = now()
      where id = v_offer.id;
-    raise exception 'offer_expired' using errcode = '22023';
+    return jsonb_build_object(
+      'status','EXPIRED',
+      'offer_id',v_offer.id,
+      'booking_id',v_offer.booking_id
+    );
   end if;
 
   if v_response = 'DECLINED' then
@@ -170,7 +178,11 @@ begin
     update public.booking_dispatch_offers
        set status = 'CANCELLED', responded_at = now()
      where id = v_offer.id;
-    raise exception 'booking_unavailable' using errcode = '40001';
+    return jsonb_build_object(
+      'status','BOOKING_UNAVAILABLE',
+      'offer_id',v_offer.id,
+      'booking_id',v_offer.booking_id
+    );
   end if;
 
   update public.bookings
