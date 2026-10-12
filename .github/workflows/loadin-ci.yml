@@ -51,6 +51,15 @@ jobs:
         run: psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/security-smoke.sql
       - name: Domain tests
         run: npm test
+      - name: Frontend syntax smoke
+        run: |
+          node --check src/platform/supabase-rest.js
+          node --check apps/shared/loadin-data.js
+          node --check apps/customer-web/app.js
+          node --check apps/customer-web/experience.js
+          node --check apps/partner-web/app.js
+          node --check apps/admin-web/app.js
+          node --check apps/fleet-web/app.js
       - name: Preview smoke
         run: |
           node scripts/preview-server.mjs > /tmp/loadin-preview.log 2>&1 &
@@ -64,6 +73,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "LOADIN Customer"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
+          curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "bookingTrackingSnapshot"
           curl -fsS http://127.0.0.1:4173/customer-checkout | grep -q "LOADIN Checkout"
           curl -fsS http://127.0.0.1:4173/customer-recurring | grep -q "LOADIN Recurring Routes"
           curl -fsS http://127.0.0.1:4173/customer-business | grep -q "LOADIN Business Account"
