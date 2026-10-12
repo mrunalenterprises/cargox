@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOADIN Fleet</title>
+  <meta name="theme-color" content="#0d1d3b" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span>LOAD</span><b>IN</b><small>Fleet</small></div>
+      <nav id="nav">
+        <button class="active" data-route="dashboard">Dashboard</button>
+        <button data-route="vehicles">Vehicles</button>
+        <button data-route="drivers">Drivers</button>
+        <button data-route="assignments">Assignments</button>
+        <button data-route="bookings">Bookings</button>
+        <button data-route="earnings">Earnings</button>
+        <button data-route="reports">Reports</button>
+      </nav>
+      <div class="sidebar-foot"><strong>Mrunal Fleet Services</strong><small>Business/Fleet Account</small></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><span class="eyebrow">BUSINESS / FLEET</span><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="actions"><button id="addVehicle">+ Vehicle</button><button id="addDriver">+ Driver</button></div>
+      </header>
+      <section id="view"></section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
