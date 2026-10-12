@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mapRuntime,directionsLink,checkoutSummary,validateDocumentUpload,notificationPolicy,bookingOpsSummary,PAYMENT_METHOD,PARTNER_PLAN} from '../src/platform/runtime-integrations.js';
+
+test('map runtime detects configured browser key',()=>{assert.equal(mapRuntime({googleMapsApiKey:'abc'}).mode,'LIVE_READY');assert.equal(mapRuntime({}).mode,'DEMO')});
+test('directions link includes pickup and drop',()=>{const u=directionsLink({pickup:'Cidco, Sambhaji Nagar',drop:'Waluj MIDC'});assert.match(u,/google\.com\/maps\/dir/);assert.match(u,/Cidco/);assert.match(u,/Waluj/) });
+test('commission checkout keeps gateway fee inside platform commission',()=>{const x=checkoutSummary({fare:1000,method:PAYMENT_METHOD.ONLINE,gatewayRate:.02});assert.equal(x.platformCommission,150);assert.equal(x.partnerEntitlement,850);assert.equal(x.gatewayFee,20);assert.equal(x.gatewayFeeChargedToCustomer,0);assert.equal(x.customerTotal,1000)});
+test('subscription direct payment has zero commission',()=>{const x=checkoutSummary({fare:1000,extras:100,plan:PARTNER_PLAN.SUBSCRIPTION,method:PAYMENT_METHOD.UPI});assert.equal(x.platformCommission,0);assert.equal(x.customerTotal,1100);assert.equal(x.partnerEntitlement,1100);assert.equal(x.directToPartner,true)});
+test('document validation accepts pdf under 10mb and rejects oversized exe',()=>{assert.equal(validateDocumentUpload({name:'rc.pdf',size:1024,type:'application/pdf'}).ok,true);const bad=validateDocumentUpload({name:'x.exe',size:12*1024*1024,type:'application/octet-stream'});assert.equal(bad.ok,false);assert.ok(bad.errors.includes('FILE_TOO_LARGE'))});
+test('priority notifications bypass quiet hours',()=>{const p=notificationPolicy({marketing:true});assert.ok(p.priorityBypassesQuietHours.includes('SOS'));assert.equal(p.marketingAllowed,true)});
+test('booking ops summary calculates completed settlement',()=>{const s=bookingOpsSummary({booking:{id:'B1',status:'COMPLETED',pickup_address:'A',drop_address:'B',locked_fare:1000,fare_locked:true,partner_id:'P1'},proofs:[{}],supportCases:[{status:'OPEN'}],events:[{},{}]});assert.equal(s.commission,150);assert.equal(s.partnerEntitlement,850);assert.equal(s.proofCount,1);assert.equal(s.openSupport,1)});
