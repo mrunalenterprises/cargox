@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOADIN Admin</title>
+  <meta name="theme-color" content="#0d1d3b" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand"><span>LOAD</span><b>IN</b><small>ADMIN</small></div>
+      <nav id="sidebarNav">
+        <button class="nav-item active" data-route="dashboard">Dashboard</button>
+        <button class="nav-item" data-route="live">Live Operations</button>
+        <button class="nav-item" data-route="bookings">Bookings</button>
+        <button class="nav-item" data-route="partners">Partners & Vehicles</button>
+        <button class="nav-item" data-route="finance">Finance & Payouts</button>
+        <button class="nav-item" data-route="cities">Cities & Services</button>
+      </nav>
+      <div class="sidebar-foot"><strong>Super Admin</strong><small>Mrunal Technologies Pvt. Ltd.</small></div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div><small class="eyebrow">LOADIN OPERATIONS</small><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions"><span class="health-dot"></span><span>System healthy</span><button id="refreshBtn" type="button">Refresh</button></div>
+      </header>
+      <section id="content"></section>
+    </main>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
