@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOADIN Customer</title>
+  <meta name="theme-color" content="#ff7a00" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">LOADIN</div>
+        <button class="location-chip" type="button" aria-label="Current location">
+          <span>●</span>
+          <span id="locationText">Chhatrapati Sambhaji Nagar</span>
+          <span>⌄</span>
+        </button>
+      </div>
+      <button class="icon-button" type="button" aria-label="Notifications">🔔</button>
+    </header>
+
+    <main id="screen" class="screen" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" data-route="home" type="button"><span>⌂</span><small>Home</small></button>
+      <button class="nav-item" data-route="bookings" type="button"><span>▣</span><small>My Bookings</small></button>
+      <button class="nav-item" data-route="support" type="button"><span>◉</span><small>Support</small></button>
+      <button class="nav-item" data-route="account" type="button"><span>☺</span><small>Account</small></button>
+    </nav>
+  </div>
+
+  <template id="homeTemplate">
+    <section class="hero-card">
+      <div>
+        <span class="eyebrow">AI SMART BOOKING</span>
+        <h1>Move anything.<br />Book in seconds.</h1>
+        <p>Tell us what you are moving. LOADIN will suggest the right service and vehicle.</p>
+      </div>
+      <div class="hero-orb">AI</div>
+    </section>
+
+    <section class="booking-card">
+      <label class="field-label" for="goodsInput">What are you moving?</label>
+      <div class="input-row">
+        <input id="goodsInput" type="text" placeholder="e.g. 12 boxes, fridge, office material" autocomplete="off" />
+        <button class="mini-button" id="voiceButton" type="button" title="Voice input">🎙</button>
+        <button class="mini-button" id="photoButton" type="button" title="Add photo">📷</button>
+      </div>
+
+      <div class="route-grid">
+        <label>
+          <span>Pickup</span>
+          <input id="pickupInput" type="text" placeholder="Pickup location" value="Cidco, Sambhaji Nagar" />
+        </label>
+        <label>
+          <span>Drop</span>
+          <input id="dropInput" type="text" placeholder="Drop location" value="Waluj MIDC" />
+        </label>
+      </div>
+
+      <div class="segmented" role="group" aria-label="Booking time">
+        <button class="segment active" data-time="now" type="button">Now</button>
+        <button class="segment" data-time="schedule" type="button">Schedule</button>
+      </div>
+      <div id="scheduleRow" class="schedule-row hidden">
+        <input id="scheduleDate" type="date" />
+        <input id="scheduleTime" type="time" />
+      </div>
+
+      <button class="primary-button" id="findButton" type="button">Find best option</button>
+      <p class="trust-copy">Fare Lock • Verified Partners • Live Tracking • OTP Proof</p>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">SERVICES</span>
+          <h2>What do you need today?</h2>
+        </div>
+      </div>
+      <div class="service-grid" id="serviceGrid">
+        <button class="service-card" data-service="parcel" type="button">
+          <div class="service-visual parcel"><span>▰</span></div>
+          <div><strong>2-Wheeler Parcel</strong><small>Small parcels & documents</small></div>
+        </button>
+        <button class="service-card" data-service="loading" type="button">
+          <div class="service-visual loading"><span>▱</span></div>
+          <div><strong>Loading Vehicle</strong><small>3W, Tata Ace, Pickup & trucks</small></div>
+        </button>
+        <button class="service-card" data-service="helper" type="button">
+          <div class="service-visual helper"><span>♙</span></div>
+          <div><strong>Helper</strong><small>Loading, unloading & lifting</small></div>
+        </button>
+        <button class="service-card" data-service="shifting" type="button">
+          <div class="service-visual shifting"><span>⌂</span></div>
+          <div><strong>Full Shifting</strong><small>Pack, move & unpack</small></div>
+        </button>
+      </div>
+    </section>
+
+    <section class="repeat-card">
+      <div>
+        <span class="eyebrow dark">BOOK AGAIN</span>
+        <h3>Office material • Cidco → Waluj</h3>
+        <p>Last used: Loading Vehicle • Tata Ace</p>
+      </div>
+      <button class="secondary-button" id="bookAgainButton" type="button">Book Again</button>
+    </section>
+
+    <section id="resultsSection" class="results-section hidden">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">AI MATCHES</span>
+          <h2>Best options for you</h2>
+        </div>
+        <span class="fare-lock-pill">Fare Locked</span>
+      </div>
+      <div id="resultCards" class="result-list"></div>
+    </section>
+  </template>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
