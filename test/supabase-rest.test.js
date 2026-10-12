@@ -25,6 +25,12 @@ test('insert asks PostgREST for representation',async()=>{
   assert.equal(rows[0].id,'b1');assert.equal(opts.method,'POST');assert.equal(opts.headers.Prefer,'return=representation');
 });
 
+test('rpc posts arguments to PostgREST function endpoint',async()=>{
+  let seenUrl='',seenOpts;const c=createSupabaseRestClient({url:'https://demo.supabase.co',anonKey:'anon',fetchImpl:async(url,opts)=>{seenUrl=url;seenOpts=opts;return response({status:'ACCEPTED'})}});
+  const result=await c.rpc('respond_to_dispatch_offer',{p_offer_id:'offer-1',p_response:'ACCEPTED'});
+  assert.equal(result.status,'ACCEPTED');assert.match(seenUrl,/rest\/v1\/rpc\/respond_to_dispatch_offer$/);assert.equal(seenOpts.method,'POST');assert.equal(JSON.parse(seenOpts.body).p_offer_id,'offer-1');
+});
+
 test('HTTP errors surface backend message',async()=>{
   const c=createSupabaseRestClient({url:'https://demo.supabase.co',anonKey:'anon',fetchImpl:async()=>response({message:'denied'},{ok:false,status:403})});
   await assert.rejects(()=>c.select('bookings'),/denied/);
