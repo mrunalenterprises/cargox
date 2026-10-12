@@ -160,6 +160,7 @@ declare
   v_uid uuid := auth.uid();
   v_booking public.bookings;
   v_partner uuid;
+  v_from_status text;
 begin
   if v_uid is null then
     raise exception 'authentication_required' using errcode = '42501';
@@ -179,6 +180,7 @@ begin
   end if;
 
   v_partner := v_booking.partner_id;
+  v_from_status := v_booking.status;
 
   update public.bookings
      set status = 'CANCELLED',
@@ -196,7 +198,7 @@ begin
     booking_id, from_status, to_status, actor_id, actor_role, metadata
   ) values (
     p_booking_id,
-    case when v_booking.status = 'CANCELLED' then null else v_booking.status end,
+    v_from_status,
     'CANCELLED',
     v_uid,
     'CUSTOMER',
