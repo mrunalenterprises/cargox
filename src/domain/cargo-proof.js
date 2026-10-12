@@ -5,8 +5,8 @@ export const PROOF_STAGE = Object.freeze({
 });
 
 export function validateDeclaredGoods({ description, declaredValue = 0, prohibited = false }) {
-  if (!description || String(description).trim().length < 2) throw new Error('goods_description_required');
   if (prohibited) throw new Error('prohibited_goods');
+  if (!description || String(description).trim().length < 2) throw new Error('goods_description_required');
   const value = Number(declaredValue || 0);
   if (!Number.isFinite(value) || value < 0) throw new Error('invalid_declared_value');
   return { description: String(description).trim(), declaredValue: Math.round(value * 100) / 100 };
