@@ -75,12 +75,12 @@ alter table public.partner_positioning_alerts enable row level security;
 
 -- Heatmap and predictions are operational/admin surfaces. No public insert/update policies.
 -- Partners can read only their own positioning alerts.
-create policy if not exists "partner reads own positioning alerts"
+create policy "partner reads own positioning alerts"
 on public.partner_positioning_alerts
 for select
 using (partner_id = auth.uid());
 
-create policy if not exists "partner updates own positioning alert response"
+create policy "partner updates own positioning alert response"
 on public.partner_positioning_alerts
 for update
 using (partner_id = auth.uid())
