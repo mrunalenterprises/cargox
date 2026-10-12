@@ -58,6 +58,26 @@ begin
   limit 1;
 
   if found then
+    update public.support_cases
+       set priority = case
+             when v_priority_db = 'URGENT' then 'URGENT'
+             when v_priority_db = 'HIGH' and priority in ('LOW','NORMAL') then 'HIGH'
+             when v_priority_db = 'NORMAL' and priority = 'LOW' then 'NORMAL'
+             else priority
+           end,
+           category = case
+             when v_priority_ui = 'P0' or v_category in ('SAFETY','SOS') then v_category
+             else category
+           end,
+           partner_id = coalesce(partner_id, v_booking.partner_id),
+           active_trip_escalation = active_trip_escalation or (
+             v_booking.status not in ('COMPLETED','CANCELLED','FAILED') and v_priority_ui in ('P0','P1')
+           ),
+           safety_risk = safety_risk or v_priority_ui = 'P0' or v_category in ('SAFETY','SOS'),
+           updated_at = now()
+     where id = v_case.id
+    returning * into v_case;
+
     insert into public.support_case_events(case_id, actor_id, actor_role, event_type, note, metadata)
     values (
       v_case.id,
