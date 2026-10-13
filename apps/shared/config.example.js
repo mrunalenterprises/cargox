@@ -5,9 +5,10 @@ window.__LOADIN_CONFIG__ = {
   supabaseAnonKey: 'YOUR_PUBLIC_ANON_KEY',
   // Browser Maps key must be HTTP-referrer restricted in Google Cloud.
   googleMapsApiKey: 'YOUR_RESTRICTED_BROWSER_MAPS_KEY',
-  // Only public/client payment identifiers belong here. Secret keys stay server-side.
-  paymentProvider: 'UNSET',
+  // Only public/client payment identifiers belong here. Provider secrets stay in services/payment-worker.
+  paymentProvider: 'RAZORPAY',
   paymentPublicKey: 'YOUR_PAYMENT_PUBLIC_KEY',
+  paymentApiBase: 'https://payments.example.com/loadin',
   // Admin/Fleet privileged operations must go through a secured server/API.
   adminApiBase: 'https://api.example.com/loadin'
 };
