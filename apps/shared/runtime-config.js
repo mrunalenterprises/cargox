@@ -22,16 +22,16 @@ function meaningful(config){return Boolean(config?.supabaseUrl&&config?.supabase
 
 async function loadPublicConfig(){
   const injected=globalThis.__LOADIN_CONFIG__||{};
-  if(meaningful(injected))return mergeConfig(DEFAULTS,injected);
-  if(typeof fetch!=='function')return mergeConfig(DEFAULTS,injected);
-  try{
-    const response=await fetch('/loadin-config.json',{cache:'no-store',credentials:'same-origin'});
-    if(!response.ok)return mergeConfig(DEFAULTS,injected);
-    const remote=await response.json();
-    const config=mergeConfig(mergeConfig(DEFAULTS,remote),injected);
-    globalThis.__LOADIN_CONFIG__=config;
-    return config;
-  }catch{return mergeConfig(DEFAULTS,injected)}
+  let remote={};
+  if(typeof fetch==='function'){
+    try{
+      const response=await fetch('/loadin-config.json',{cache:'no-store',credentials:'same-origin'});
+      if(response.ok)remote=await response.json();
+    }catch{}
+  }
+  const config=mergeConfig(mergeConfig(DEFAULTS,remote),injected);
+  globalThis.__LOADIN_CONFIG__=config;
+  return config;
 }
 
 export const runtimeConfig=await loadPublicConfig();
