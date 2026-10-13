@@ -70,6 +70,7 @@ jobs:
           node --check apps/shared/live-auth-guard.js
           node --check apps/shared/notifications-production.js
           node --check apps/shared/notification-center-page.js
+          node --check apps/shared/production-readiness.js
           node --check apps/auth-web/app.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
@@ -83,6 +84,33 @@ jobs:
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
           node --check services/payment-worker/worker.mjs
+          node --check scripts/production-smoke.mjs
+      - name: Worker readiness contracts
+        run: |
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test \
+          FCM_PROJECT_ID=test-project \
+          FCM_CLIENT_EMAIL=test@example.com \
+          FCM_PRIVATE_KEY=dummy \
+          node services/notification-worker/worker.mjs --check | grep -q '"ok":true'
+          PORT=8788 \
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test \
+          PAYMENT_PROVIDER=RAZORPAY \
+          RAZORPAY_KEY_ID=rzp_test_dummy \
+          RAZORPAY_KEY_SECRET=dummy \
+          RAZORPAY_WEBHOOK_SECRET=dummy \
+          node services/payment-worker/worker.mjs > /tmp/loadin-payment.log 2>&1 &
+          PAYMENT_PID=$!
+          trap 'kill $PAYMENT_PID || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:8788/health > /tmp/payment-health.json; then break; fi
+            sleep 0.2
+          done
+          grep -q 'loadin-payment-worker' /tmp/payment-health.json
+          curl -fsS http://127.0.0.1:8788/ready | grep -q '"ok":true'
+          kill $PAYMENT_PID || true
+          trap - EXIT
       - name: Preview smoke
         run: |
           node scripts/preview-server.mjs > /tmp/loadin-preview.log 2>&1 &
@@ -99,6 +127,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/apps/shared/auth-production.js | grep -q "get_my_loadin_identity"
           curl -fsS http://127.0.0.1:4173/apps/shared/live-auth-guard.js | grep -q "enforceLiveAuth"
           curl -fsS http://127.0.0.1:4173/apps/shared/notifications-production.js | grep -q "get_my_notification_center"
+          curl -fsS http://127.0.0.1:4173/apps/shared/production-readiness.js | grep -q "paymentHealth"
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "Account & Security"
           curl -fsS http://127.0.0.1:4173/customer-account | grep -q "Account & Security"
@@ -124,7 +153,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/partner-wallet | grep -q "LOADIN Partner Wallet"
           curl -fsS http://127.0.0.1:4173/partner-quality | grep -q "LOADIN Partner Quality & Demand"
           curl -fsS http://127.0.0.1:4173/partner-plan | grep -q "LOADIN Partner Plan Center"
-          curl -fsS http://127.0.0.1:4173/admin | grep -q "booking-deeplink.js"
+          curl -fsS http://127.0.0.1:4173/admin | grep -q "production-readiness.html"
+          curl -fsS http://127.0.0.1:4173/admin-readiness | grep -q "Production configuration health"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/booking-deeplink.js | grep -q "booking-detail.html"
           curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/ops-map.js | grep -q "liveMapSnapshot"
@@ -145,3 +175,4 @@ jobs:
           curl -fsS http://127.0.0.1:4173/fleet-reports | grep -q "LOADIN Fleet Reports"
           curl -fsS http://127.0.0.1:4173/fleet-assignments | grep -q "LOADIN Fleet Assignment Planner"
           curl -fsS http://127.0.0.1:4173/fleet-dispatch | grep -q "LOADIN Fleet Dispatch Board"
+          LOADIN_APP_BASE=http://127.0.0.1:4173 node scripts/production-smoke.mjs
