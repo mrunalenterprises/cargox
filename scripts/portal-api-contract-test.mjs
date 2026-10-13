@@ -6,6 +6,9 @@ const mockPort=8791;
 const apiPort=8792;
 const origin='http://127.0.0.1:4173';
 const supportId='11111111-1111-4111-8111-111111111111';
+const vehicleId='22222222-2222-4222-8222-222222222222';
+const driverId='33333333-3333-4333-8333-333333333333';
+const assignmentId='44444444-4444-4444-8444-444444444444';
 
 const calls=[];
 const mock=http.createServer(async(req,res)=>{
@@ -17,6 +20,12 @@ const mock=http.createServer(async(req,res)=>{
   if(req.url.endsWith('/loadin_fleet_snapshot'))return res.end(JSON.stringify({account:{id:'FLEET-1'},vehicles:[]}));
   if(req.url.endsWith('/loadin_admin_resolve_support_case'))return res.end(JSON.stringify({id:supportId,status:'RESOLVED'}));
   if(req.url.endsWith('/loadin_admin_set_city_service_status'))return res.end(JSON.stringify({city_code:'CSN',service_code:'TWO_WHEELER_PARCEL',status:'PAUSED'}));
+  if(req.url.endsWith('/loadin_fleet_add_vehicle'))return res.end(JSON.stringify({id:vehicleId,registration_number:'MH20AB1234',vehicle_type:'TATA_ACE',status:'ACTIVE'}));
+  if(req.url.endsWith('/loadin_fleet_add_driver'))return res.end(JSON.stringify({id:driverId,name:'CI Driver',phone:'+919900001234',status:'ACTIVE'}));
+  if(req.url.endsWith('/loadin_fleet_assign_driver'))return res.end(JSON.stringify({id:assignmentId,vehicle_id:vehicleId,driver_id:driverId,status:'ACTIVE'}));
+  if(req.url.endsWith('/loadin_fleet_end_assignment'))return res.end(JSON.stringify({id:assignmentId,status:'ENDED'}));
+  if(req.url.endsWith('/loadin_fleet_set_vehicle_status'))return res.end(JSON.stringify({id:vehicleId,status:'MAINTENANCE'}));
+  if(req.url.endsWith('/loadin_fleet_set_driver_status'))return res.end(JSON.stringify({id:driverId,status:'INACTIVE'}));
   res.end('{}');
 });
 await new Promise(resolve=>mock.listen(mockPort,'127.0.0.1',resolve));
@@ -29,6 +38,7 @@ let stderr='';child.stderr.on('data',d=>stderr+=d);
 
 async function waitReady(){for(let i=0;i<50;i++){try{const r=await fetch(`http://127.0.0.1:${apiPort}/health`);if(r.ok)return}catch{}await new Promise(r=>setTimeout(r,100))}throw new Error(`portal_worker_not_ready ${stderr}`)}
 async function call(path,options={}){return fetch(`http://127.0.0.1:${apiPort}${path}`,options)}
+const auth=(token='fleet-token')=>({Origin:origin,Authorization:`Bearer ${token}`,'content-type':'application/json'});
 
 try{
   await waitReady();
@@ -41,15 +51,25 @@ try{
 
   r=await call('/fleet/me',{headers:{Origin:origin,Authorization:'Bearer fleet-token'}});assert.equal(r.status,200);j=await r.json();assert.equal(j.account.id,'FLEET-1');
 
-  r=await call(`/admin/support/${supportId}/resolve`,{method:'POST',headers:{Origin:origin,Authorization:'Bearer admin-token','content-type':'application/json'},body:JSON.stringify({notes:'Customer contacted and issue resolved.'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'RESOLVED');
+  r=await call(`/admin/support/${supportId}/resolve`,{method:'POST',headers:auth('admin-token'),body:JSON.stringify({notes:'Customer contacted and issue resolved.'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'RESOLVED');
   const supportCall=calls.at(-1);assert.match(supportCall.url,/loadin_admin_resolve_support_case$/);assert.equal(JSON.parse(supportCall.body).p_case_id,supportId);
 
-  r=await call('/admin/city-service-status',{method:'POST',headers:{Origin:origin,Authorization:'Bearer admin-token','content-type':'application/json'},body:JSON.stringify({cityCode:'csn',serviceCode:'two_wheeler_parcel',status:'paused',reason:'Capacity control'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'PAUSED');
+  r=await call('/admin/city-service-status',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({cityCode:'csn',serviceCode:'two_wheeler_parcel',status:'paused',reason:'Capacity control'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'PAUSED');
   const cityCall=JSON.parse(calls.at(-1).body);assert.equal(cityCall.p_city_code,'CSN');assert.equal(cityCall.p_service_code,'TWO_WHEELER_PARCEL');
 
-  r=await call('/admin/city-service-status',{method:'POST',headers:{Origin:origin,Authorization:'Bearer admin-token','content-type':'application/json'},body:'{"cityCode":'});assert.equal(r.status,400);
-  r=await call('/admin/city-service-status',{method:'POST',headers:{Origin:origin,Authorization:'Bearer admin-token','content-type':'application/json'},body:'x'.repeat(3000)});assert.equal(r.status,413);
-  r=await call('/admin/support/not-a-uuid/resolve',{method:'POST',headers:{Origin:origin,Authorization:'Bearer admin-token','content-type':'application/json'},body:'{}'});assert.equal(r.status,400);
+  r=await call('/fleet/vehicles',{method:'POST',headers:auth(),body:JSON.stringify({registrationNumber:'mh20ab1234',vehicleType:'TATA_ACE'})});assert.equal(r.status,201);j=await r.json();assert.equal(j.id,vehicleId);let rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_registration_number,'mh20ab1234');assert.equal(rpc.p_vehicle_type,'TATA_ACE');
+  r=await call('/fleet/drivers',{method:'POST',headers:auth(),body:JSON.stringify({fullName:'CI Driver',mobile:'+919900001234'})});assert.equal(r.status,201);j=await r.json();assert.equal(j.id,driverId);rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_full_name,'CI Driver');
+  r=await call('/fleet/assignments',{method:'POST',headers:auth(),body:JSON.stringify({vehicleId,driverId})});assert.equal(r.status,201);j=await r.json();assert.equal(j.id,assignmentId);rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_vehicle_id,vehicleId);assert.equal(rpc.p_driver_id,driverId);
+  r=await call(`/fleet/assignments/${assignmentId}/end`,{method:'POST',headers:auth(),body:'{}'});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'ENDED');
+  r=await call(`/fleet/vehicles/${vehicleId}/status`,{method:'POST',headers:auth(),body:JSON.stringify({status:'maintenance'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'MAINTENANCE');
+  r=await call(`/fleet/drivers/${driverId}/status`,{method:'POST',headers:auth(),body:JSON.stringify({status:'inactive'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'INACTIVE');
+
+  r=await call('/fleet/assignments',{method:'POST',headers:auth(),body:JSON.stringify({vehicleId:'bad',driverId})});assert.equal(r.status,400);
+  r=await call('/fleet/vehicles/not-a-uuid/status',{method:'POST',headers:auth(),body:JSON.stringify({status:'ACTIVE'})});assert.equal(r.status,400);
+  r=await call('/fleet/vehicles',{method:'POST',headers:auth(),body:JSON.stringify({vehicleType:'TATA_ACE'})});assert.equal(r.status,400);
+  r=await call('/admin/city-service-status',{method:'POST',headers:auth('admin-token'),body:'{"cityCode":'});assert.equal(r.status,400);
+  r=await call('/admin/city-service-status',{method:'POST',headers:auth('admin-token'),body:'x'.repeat(3000)});assert.equal(r.status,413);
+  r=await call('/admin/support/not-a-uuid/resolve',{method:'POST',headers:auth('admin-token'),body:'{}'});assert.equal(r.status,400);
   r=await call('/unknown',{headers:{Origin:origin,Authorization:'Bearer admin-token'}});assert.equal(r.status,404);
 
   console.log('Portal API contract tests passed.');
