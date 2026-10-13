@@ -6,13 +6,13 @@ const out=process.env.LOADIN_UI_ARTIFACT_DIR||'artifacts/ui-smoke';
 await mkdir(out,{recursive:true});
 
 const cases=[
-  {name:'website',path:'/website',expect:'LOADIN'},
-  {name:'customer',path:'/customer',expect:'LOADIN Customer'},
-  {name:'partner',path:'/partner',expect:'LOADIN Partner'},
-  {name:'admin',path:'/admin',expect:'LOADIN OPERATIONS'},
-  {name:'admin-launch',path:'/admin-launch',expect:'Production release gate'},
-  {name:'admin-readiness',path:'/admin-readiness',expect:'Production configuration health'},
-  {name:'fleet',path:'/fleet',expect:'LOADIN Fleet'}
+  {name:'website',path:'/website',title:'LOADIN',visible:'Move anything.'},
+  {name:'customer',path:'/customer',title:'LOADIN Customer',visible:'Move anything.'},
+  {name:'partner',path:'/partner',title:'LOADIN Partner',visible:'You are Offline'},
+  {name:'admin',path:'/admin',title:'LOADIN Admin',visible:'LOADIN OPERATIONS'},
+  {name:'admin-launch',path:'/admin-launch',title:'LOADIN Launch Control',visible:'Production release gate'},
+  {name:'admin-readiness',path:'/admin-readiness',title:'LOADIN Production Readiness',visible:'Production configuration health'},
+  {name:'fleet',path:'/fleet',title:'LOADIN Fleet',visible:'Total Vehicles'}
 ];
 
 const browser=await chromium.launch({headless:true});
@@ -23,12 +23,19 @@ try{
     const page=await context.newPage();
     const errors=[];
     page.on('pageerror',e=>errors.push(`pageerror: ${e.message}`));
-    page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))errors.push(`console: ${m.text()}`)});
+    page.on('response',r=>{
+      const u=r.url();
+      if(r.status()>=400&&u.startsWith(base)&&!u.endsWith('/favicon.ico'))errors.push(`http ${r.status()}: ${u.slice(base.length)}`);
+    });
     const response=await page.goto(`${base}${c.path}`,{waitUntil:'networkidle',timeout:15000});
+    await page.waitForFunction(text=>document.body?.innerText?.includes(text),c.visible,{timeout:8000}).catch(()=>{});
     const body=await page.locator('body').innerText();
-    const ok=Boolean(response?.ok())&&body.includes(c.expect)&&errors.length===0;
+    const title=await page.title();
+    const titleOk=title.includes(c.title);
+    const visibleOk=body.includes(c.visible);
+    const ok=Boolean(response?.ok())&&titleOk&&visibleOk&&errors.length===0;
     await page.screenshot({path:`${out}/${c.name}.png`,fullPage:true});
-    results.push({name:c.name,path:c.path,status:response?.status()||0,expected:c.expect,found:body.includes(c.expect),errors,ok});
+    results.push({name:c.name,path:c.path,status:response?.status()||0,title,expectedTitle:c.title,titleOk,expectedVisible:c.visible,visibleOk,errors,ok});
     await page.close();
   }
 }finally{await browser.close()}
