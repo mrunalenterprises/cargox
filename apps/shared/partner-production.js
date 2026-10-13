@@ -13,6 +13,17 @@ export const partnerProduction={
     if(!client.configured)return {approved:true,vehicleEligible:true,partnerDocsValid:true,vehicleDocsValid:true,identityReady:true,canGoOnline:true,expiringWithin30Days:0,expiredDocuments:0,demo:true};
     return client.rpc('get_my_partner_compliance_snapshot');
   },
+  async documentSnapshot(){
+    if(!client.configured){const today=new Date();const soon=new Date(today);soon.setDate(soon.getDate()+18);return {partner:[{id:'D1',document_type:'DRIVING_LICENCE',status:'APPROVED',expiry_date:soon.toISOString().slice(0,10)},{id:'D2',document_type:'PAN',status:'APPROVED',expiry_date:null}],vehicle:[{id:'V1',document_type:'INSURANCE',status:'APPROVED',expiry_date:soon.toISOString().slice(0,10)},{id:'V2',document_type:'PUC',status:'APPROVED',expiry_date:null}],vehicleId:'DEMO-VEHICLE',demo:true}}
+    const user=await currentUser();if(!user?.id)throw new Error('login_required');
+    const [partnerDocs,vehicles]=await Promise.all([
+      client.select('partner_documents',{filters:{partner_id:eq(user.id)},order:desc('updated_at'),limit:100}),
+      client.select('partner_vehicles',{filters:{partner_id:eq(user.id)},order:desc('updated_at'),limit:1})
+    ]);
+    const vehicle=vehicles?.[0]||null;
+    const vehicleDocs=vehicle?await client.select('vehicle_documents',{filters:{vehicle_id:eq(vehicle.id)},order:desc('updated_at'),limit:100}):[];
+    return {partner:partnerDocs||[],vehicle:vehicleDocs||[],vehicleId:vehicle?.id||null};
+  },
   async uploadOnlineIdentitySelfie(file){
     if(!file)throw new Error('selfie_required');
     if(!client.configured)return {status:'CAPTURED',valid_for_minutes:15,demo:true};
