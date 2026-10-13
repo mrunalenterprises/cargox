@@ -12,6 +12,12 @@ begin
   if has_function_privilege('anon','public.update_my_customer_profile(text,text,text)','EXECUTE') then
     raise exception 'anon must not execute update_my_customer_profile';
   end if;
+  if has_function_privilege('anon','public.get_my_push_devices()','EXECUTE') then
+    raise exception 'anon must not execute get_my_push_devices';
+  end if;
+  if has_function_privilege('anon','public.deactivate_my_push_device(text)','EXECUTE') then
+    raise exception 'anon must not execute deactivate_my_push_device';
+  end if;
   if not has_function_privilege('authenticated','public.get_my_notification_center()','EXECUTE') then
     raise exception 'authenticated must execute get_my_notification_center';
   end if;
@@ -20,6 +26,12 @@ begin
   end if;
   if not has_function_privilege('authenticated','public.update_my_customer_profile(text,text,text)','EXECUTE') then
     raise exception 'authenticated must execute update_my_customer_profile';
+  end if;
+  if not has_function_privilege('authenticated','public.get_my_push_devices()','EXECUTE') then
+    raise exception 'authenticated must execute get_my_push_devices';
+  end if;
+  if not has_function_privilege('authenticated','public.deactivate_my_push_device(text)','EXECUTE') then
+    raise exception 'authenticated must execute deactivate_my_push_device';
   end if;
 end $$;
 
@@ -35,6 +47,7 @@ on conflict (user_id) do nothing;
 
 select public.update_my_customer_profile('CI Updated','ci-notify@example.com','CSN');
 select public.set_my_notification_preferences(true,true,true,false,true,true,true,'22:00'::time,'07:00'::time);
+select public.upsert_my_push_token('CI-WEB-FCM-TOKEN','WEB','CI-BROWSER');
 
 insert into public.notifications(user_id,notification_type,priority,title,body,status,created_at)
 values
@@ -45,6 +58,8 @@ do $$
 declare
   v_center jsonb;
   v_marked integer;
+  v_devices jsonb;
+  v_deactivate jsonb;
 begin
   if not exists (
     select 1 from public.customer_profiles
@@ -63,6 +78,25 @@ begin
     raise exception 'notification preferences did not persist';
   end if;
 
+  select public.get_my_push_devices() into v_devices;
+  if jsonb_array_length(coalesce(v_devices->'devices','[]'::jsonb)) <> 1 then
+    raise exception 'push device registration not visible to owner';
+  end if;
+  if coalesce((v_devices->'devices'->0->>'active')::boolean,false) is not true then
+    raise exception 'new push device should be active';
+  end if;
+
+  select public.deactivate_my_push_device('CI-BROWSER') into v_deactivate;
+  if coalesce((v_deactivate->>'deactivated')::boolean,false) is not true then
+    raise exception 'push device deactivation failed';
+  end if;
+  if exists (
+    select 1 from public.push_device_tokens
+    where user_id='22222222-2222-2222-2222-222222222222'::uuid and device_id='CI-BROWSER' and active=true
+  ) then
+    raise exception 'push device remained active after deactivation';
+  end if;
+
   select public.mark_all_my_notifications_opened() into v_marked;
   if v_marked <> 1 then
     raise exception 'mark all opened count mismatch: %', v_marked;
@@ -76,6 +110,7 @@ begin
   end if;
 end $$;
 
+delete from public.push_device_tokens where user_id='22222222-2222-2222-2222-222222222222'::uuid;
 delete from public.notifications where user_id='22222222-2222-2222-2222-222222222222'::uuid;
 delete from public.notification_preferences where user_id='22222222-2222-2222-2222-222222222222'::uuid;
 delete from public.customer_profiles where user_id='22222222-2222-2222-2222-222222222222'::uuid;
