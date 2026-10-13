@@ -41,6 +41,10 @@ export async function handlePortalRequest(req,res){
     if(req.method==='GET'&&url.pathname==='/fleet/me')return json(req,res,200,await sbRpc('loadin_fleet_snapshot',{},token));
     if(req.method==='GET'&&url.pathname==='/admin/staff')return json(req,res,200,await sbRpc('loadin_admin_staff_snapshot',{},token));
     if(req.method==='GET'&&url.pathname==='/admin/reconciliation')return json(req,res,200,await sbRpc('loadin_admin_finance_reconciliation_snapshot',{},token));
+    if(req.method==='GET'&&url.pathname==='/admin/launch-gate'){
+      const cityCode=smallText(url.searchParams.get('cityCode')||'CSN',24).toUpperCase();
+      return json(req,res,200,await sbRpc('loadin_admin_launch_gate_snapshot',{p_city_code:cityCode},token));
+    }
     if(req.method==='GET'&&url.pathname==='/admin/city-service-config'){
       const cityCode=smallText(url.searchParams.get('cityCode')||'CSN',24).toUpperCase();
       return json(req,res,200,await sbRpc('loadin_admin_city_service_config_snapshot',{p_city_code:cityCode},token));
@@ -69,6 +73,30 @@ export async function handlePortalRequest(req,res){
       const body=parseJson(await readBody(req));const status=smallText(body.status||'RESOLVED',24).toUpperCase();
       if(!['RESOLVED','IGNORED'].includes(status))return json(req,res,400,{error:'invalid_reconciliation_resolution'});
       return json(req,res,200,await sbRpc('loadin_admin_resolve_reconciliation_issue',{p_issue_id:reconcileMatch[1],p_status:status,p_notes:String(body.notes||'').slice(0,2000)||null},token));
+    }
+    if(req.method==='POST'&&url.pathname==='/admin/launch-check'){
+      const body=parseJson(await readBody(req));
+      const key=smallText(body.key,80).toUpperCase(),status=smallText(body.status,24).toUpperCase();
+      if(!key||!['PENDING','PASS','FAIL','WAIVED'].includes(status))return json(req,res,400,{error:'invalid_launch_check_request'});
+      return json(req,res,200,await sbRpc('loadin_admin_set_launch_check',{p_check_key:key,p_status:status,p_evidence:String(body.evidence||'').slice(0,4000)||null,p_metadata:body.metadata&&typeof body.metadata==='object'?body.metadata:{}},token));
+    }
+    if(req.method==='POST'&&url.pathname==='/admin/release-signoff'){
+      const body=parseJson(await readBody(req));
+      const releaseLabel=smallText(body.releaseLabel,160),commitSha=smallText(body.commitSha,80)||null,cityCode=smallText(body.cityCode||'CSN',24).toUpperCase();
+      if(!releaseLabel||!cityCode)return json(req,res,400,{error:'release_label_and_city_required'});
+      return json(req,res,201,await sbRpc('loadin_admin_create_release_signoff',{p_release_label:releaseLabel,p_commit_sha:commitSha,p_city_code:cityCode,p_notes:String(body.notes||'').slice(0,4000)||null},token));
+    }
+    const approveRelease=url.pathname.match(/^\/admin\/release-signoff\/([^/]+)\/approve$/);
+    if(req.method==='POST'&&approveRelease){
+      if(!safeUuid(approveRelease[1]))return json(req,res,400,{error:'invalid_release_signoff_id'});
+      const body=parseJson(await readBody(req));
+      return json(req,res,200,await sbRpc('loadin_admin_approve_release_signoff',{p_signoff_id:approveRelease[1],p_notes:String(body.notes||'').slice(0,4000)||null},token));
+    }
+    const revokeRelease=url.pathname.match(/^\/admin\/release-signoff\/([^/]+)\/revoke$/);
+    if(req.method==='POST'&&revokeRelease){
+      if(!safeUuid(revokeRelease[1]))return json(req,res,400,{error:'invalid_release_signoff_id'});
+      const body=parseJson(await readBody(req));
+      return json(req,res,200,await sbRpc('loadin_admin_revoke_release_signoff',{p_signoff_id:revokeRelease[1],p_notes:String(body.notes||'').slice(0,4000)||null},token));
     }
     if(req.method==='POST'&&url.pathname==='/admin/city-service-status'){
       const body=parseJson(await readBody(req));
