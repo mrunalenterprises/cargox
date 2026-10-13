@@ -109,7 +109,7 @@ begin
     if v_role <> 'FIELD_OFFICER' or v_city is distinct from v_actor.city_code then
       raise exception 'gm_may_manage_only_field_officers_in_own_city' using errcode='42501';
     end if;
-    if found and (v_before.role <> 'FIELD_OFFICER' or v_before.city_code is distinct from v_actor.city_code) then
+    if v_before.user_id is not null and (v_before.role <> 'FIELD_OFFICER' or v_before.city_code is distinct from v_actor.city_code) then
       raise exception 'gm_target_scope_denied' using errcode='42501';
     end if;
   end if;
