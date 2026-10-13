@@ -1,6 +1,6 @@
 import { createSupabaseRestClient } from '../../src/platform/supabase-rest.js';
+import { runtimeConfig as cfg } from './runtime-config.js';
 
-const cfg=globalThis.__LOADIN_CONFIG__||{};
 const client=createSupabaseRestClient({url:cfg.supabaseUrl,anonKey:cfg.supabaseAnonKey});
 const ROLES=new Set(['CUSTOMER','PARTNER','ADMIN','FLEET']);
 const CONTINUE={CUSTOMER:'/customer',PARTNER:'/partner',ADMIN:'/admin',FLEET:'/fleet'};
