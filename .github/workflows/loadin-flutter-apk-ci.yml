@@ -1,0 +1,75 @@
+name: LOADIN Flutter APK CI
+
+on:
+  push:
+    branches: [loadin-build]
+    paths:
+      - 'apps/customer_app/**'
+      - 'apps/partner_app/**'
+      - '.github/workflows/loadin-flutter-apk-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loadin-flutter-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LOADIN_SUPABASE_URL: https://wnehhzzdpkzwtxaipgdv.supabase.co
+  LOADIN_SUPABASE_PUBLISHABLE_KEY: sb_publishable_bNvuThgSTbF-zHvyG3avIg_XCdwQ0zH
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: customer_app
+            project: loadin_customer
+            artifact: loadin-customer-live-qa-apk
+          - app: partner_app
+            project: loadin_partner
+            artifact: loadin-partner-live-qa-apk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android shell
+        run: flutter create --platforms=android --org com.mrunaltechnologies --project-name ${{ matrix.project }} --no-pub .
+        working-directory: apps/${{ matrix.app }}
+      - name: Get packages
+        run: flutter pub get
+        working-directory: apps/${{ matrix.app }}
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+        working-directory: apps/${{ matrix.app }}
+      - name: Test
+        run: flutter test
+        working-directory: apps/${{ matrix.app }}
+      - name: Build live Android debug APK
+        run: >-
+          flutter build apk --debug
+          --dart-define=LOADIN_SUPABASE_URL=${{ env.LOADIN_SUPABASE_URL }}
+          --dart-define=LOADIN_SUPABASE_PUBLISHABLE_KEY=${{ env.LOADIN_SUPABASE_PUBLISHABLE_KEY }}
+        working-directory: apps/${{ matrix.app }}
+      - name: Rename APK
+        shell: bash
+        run: |
+          if [ "${{ matrix.app }}" = "customer_app" ]; then
+            cp apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-debug.apk /tmp/loadin-customer.apk
+          else
+            cp apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-debug.apk /tmp/loadin-partner.apk
+          fi
+      - name: Upload live QA APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: /tmp/loadin-*.apk
+          if-no-files-found: error
+          retention-days: 14
