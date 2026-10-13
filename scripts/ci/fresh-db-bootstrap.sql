@@ -16,6 +16,15 @@ grant usage on schema public to anon, authenticated, service_role;
 grant usage on schema auth to anon, authenticated, service_role;
 grant usage on schema storage to anon, authenticated, service_role;
 
+create table if not exists auth.users (
+  id uuid primary key,
+  phone text,
+  email text,
+  created_at timestamptz not null default now()
+);
+
+grant select on auth.users to service_role;
+
 create or replace function auth.uid()
 returns uuid
 language sql
