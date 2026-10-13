@@ -112,9 +112,8 @@ begin
         select vehicle_category from public.partner_vehicles v
         where v.partner_id = pp.user_id order by v.updated_at desc limit 1
       ) pv on true
-      left join public.partner_quality_scores pq on pq.partner_id = pp.user_id
+      left join public.partner_quality_snapshots pq on pq.partner_id = pp.user_id
       where v_city is null or pp.city_code = v_city
-      limit 100
     ), '[]'::jsonb),
     'bookings', coalesce((
       select jsonb_agg(jsonb_build_object(
@@ -131,17 +130,19 @@ begin
     ), '[]'::jsonb),
     'supportCases', coalesce((
       select jsonb_agg(jsonb_build_object(
-        'id', sc.id,
-        'booking_id', sc.booking_id,
-        'category', sc.category,
-        'priority', case sc.priority when 'URGENT' then 'P0' when 'HIGH' then 'P1' when 'NORMAL' then 'P2' else 'P3' end,
-        'status', sc.status,
-        'owner', case when sc.safety_risk then 'SAFETY' when sc.active_trip_escalation then 'ACTIVE_TRIP_SUPPORT' else 'SUPPORT' end
-      ) order by sc.created_at desc)
-      from public.support_cases sc
-      join public.bookings sb on sb.id = sc.booking_id
-      where (v_city is null or sb.city_code = v_city)
-      limit 100
+        'id', sc2.id,
+        'booking_id', sc2.booking_id,
+        'category', sc2.category,
+        'priority', case sc2.priority when 'URGENT' then 'P0' when 'HIGH' then 'P1' when 'NORMAL' then 'P2' else 'P3' end,
+        'status', sc2.status,
+        'owner', case when sc2.safety_risk then 'SAFETY' when sc2.active_trip_escalation then 'ACTIVE_TRIP_SUPPORT' else 'SUPPORT' end
+      ) order by sc2.created_at desc)
+      from (
+        select sc.* from public.support_cases sc
+        join public.bookings sb on sb.id = sc.booking_id
+        where (v_city is null or sb.city_code = v_city)
+        order by sc.created_at desc limit 100
+      ) sc2
     ), '[]'::jsonb)
   ) into v_result
   from public.bookings b
@@ -167,13 +168,14 @@ declare
 begin
   v_member := public.require_loadin_admin(array['SUPER_ADMIN','GM']);
 
-  select sc.*, b.city_code into v_case, v_city
-  from public.support_cases sc
-  join public.bookings b on b.id = sc.booking_id
-  where sc.id = p_case_id
-  for update of sc;
+  select * into v_case
+  from public.support_cases
+  where id = p_case_id
+  for update;
 
   if not found then raise exception 'support_case_not_found' using errcode = 'P0002'; end if;
+  select city_code into v_city from public.bookings where id = v_case.booking_id;
+
   if v_member.role <> 'SUPER_ADMIN' and v_member.city_code is distinct from v_city then
     raise exception 'admin_city_scope_denied' using errcode = '42501';
   end if;
@@ -293,12 +295,14 @@ begin
       left join public.fleet_vehicles fv on fv.id=a.fleet_vehicle_id
       where fd.fleet_account_id=v_account.id),'[]'::jsonb),
     'bookings', coalesce((select jsonb_agg(jsonb_build_object(
-      'id',b.id,'route',coalesce(b.pickup_address,'')||' → '||coalesce(b.drop_address,''),'status',b.status,
-      'vehicle',coalesce(b.vehicle_class,'—'),'fare',b.locked_fare,'partner_id',b.partner_id
-    ) order by b.created_at desc)
-      from public.bookings b
-      where exists(select 1 from public.fleet_drivers fd where fd.fleet_account_id=v_account.id and fd.partner_user_id=b.partner_id)
-      limit 100),'[]'::jsonb),
+      'id',bx.id,'route',coalesce(bx.pickup_address,'')||' → '||coalesce(bx.drop_address,''),'status',bx.status,
+      'vehicle',coalesce(bx.vehicle_class,'—'),'fare',bx.locked_fare,'partner_id',bx.partner_id
+    ) order by bx.created_at desc)
+      from (
+        select b.* from public.bookings b
+        where exists(select 1 from public.fleet_drivers fd where fd.fleet_account_id=v_account.id and fd.partner_user_id=b.partner_id)
+        order by b.created_at desc limit 100
+      ) bx),'[]'::jsonb),
     'earnings', coalesce((select jsonb_agg(to_jsonb(es) order by es.period_start desc)
       from public.fleet_earning_snapshots es where es.fleet_account_id=v_account.id),'[]'::jsonb)
   ) into v_result;
