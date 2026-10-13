@@ -1,4 +1,4 @@
-const cfg=globalThis.__LOADIN_CONFIG__||{};
+import { runtimeConfig as cfg } from './runtime-config.js';
 
 function text(v){return String(v||'').trim()}
 function placeholder(v){const s=text(v).toUpperCase();return !s||s.includes('YOUR_')||s.includes('EXAMPLE.COM')||s.includes('YOUR-PROJECT')||s.includes('YOUR_PROJECT')}
