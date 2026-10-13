@@ -1,0 +1,76 @@
+name: LOADIN Ops CI
+
+on:
+  push:
+    branches: [loadin-build]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  production-ops:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: loadin_ops_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d loadin_ops_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bootstrap database
+        run: psql -h 127.0.0.1 -U postgres -d loadin_ops_ci -v ON_ERROR_STOP=1 -f scripts/ci/fresh-db-bootstrap.sql
+      - name: Apply full migration chain
+        run: |
+          set -euo pipefail
+          for file in supabase/migrations/*.sql; do
+            echo "Applying $file"
+            psql -h 127.0.0.1 -U postgres -d loadin_ops_ci -v ON_ERROR_STOP=1 -f "$file"
+          done
+      - name: Staff and reconciliation security smoke
+        run: psql -h 127.0.0.1 -U postgres -d loadin_ops_ci -v ON_ERROR_STOP=1 -f scripts/ci/staff-reconciliation-security-smoke.sql
+      - name: Portal API contracts
+        run: node scripts/portal-api-contract-test.mjs
+      - name: Operations syntax contracts
+        run: npm run check:ops
+      - name: Production bootstrap config check
+        run: |
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test-service-role \
+          LOADIN_SUPER_ADMIN_USER_ID=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa \
+          node scripts/bootstrap-production.mjs --check | grep -q '"ok":true'
+      - name: Reconciliation worker readiness
+        run: |
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test-service-role \
+          LOADIN_RECONCILIATION_HOURS=168 \
+          node services/reconciliation-worker/worker.mjs --check | grep -q '"ok":true'
+      - name: Admin operations preview
+        run: |
+          node scripts/preview-server.mjs > /tmp/loadin-preview.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/admin-staff > /tmp/staff.html; then break; fi
+            sleep 0.25
+          done
+          grep -q "Staff Roles & Audit Center" /tmp/staff.html
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/staff-audit.js | grep -q "adminStaffProduction"
+          curl -fsS http://127.0.0.1:4173/admin-reconciliation | grep -q "Payment, settlement and ledger integrity"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/reconciliation.js | grep -q "reconciliationProduction"
