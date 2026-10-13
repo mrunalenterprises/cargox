@@ -67,6 +67,7 @@ jobs:
           node --check apps/admin-web/app.js
           node --check apps/admin-web/review-center.js
           node --check apps/fleet-web/app.js
+          node --check services/notification-worker/worker.mjs
       - name: Preview smoke
         run: |
           node scripts/preview-server.mjs > /tmp/loadin-preview.log 2>&1 &
