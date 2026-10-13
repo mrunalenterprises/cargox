@@ -1,4 +1,4 @@
-export const PAYMENT_METHOD={CASH:'CASH',UPI:'UPI',ONLINE:'ONLINE'};
+export const PAYMENT_METHOD={CASH:'CASH',UPI_DIRECT:'UPI_DIRECT',UPI:'UPI_DIRECT',ONLINE:'ONLINE'};
 export const PARTNER_PLAN={COMMISSION:'COMMISSION',SUBSCRIPTION:'SUBSCRIPTION'};
 
 export function mapRuntime(config={}){
@@ -13,7 +13,7 @@ export function directionsLink({pickup,drop}){
 
 export function checkoutSummary({fare=0,extras=0,plan=PARTNER_PLAN.COMMISSION,method=PAYMENT_METHOD.CASH,gatewayRate=0.02}={}){
   const base=Math.max(0,Number(fare)||0);const pass=Math.max(0,Number(extras)||0);const commission=plan===PARTNER_PLAN.SUBSCRIPTION?0:Math.round(base*.15);const partnerBase=base-commission;const customerTotal=base+pass;const gatewayFee=method===PAYMENT_METHOD.ONLINE?Math.round(customerTotal*Math.max(0,Number(gatewayRate)||0)):0;
-  return {fare:base,extras:pass,customerTotal,platformCommission:commission,partnerEntitlement:partnerBase+pass,gatewayFee,gatewayFeeChargedToCustomer:0,platformNet:Math.max(0,commission-gatewayFee),directToPartner:[PAYMENT_METHOD.CASH,PAYMENT_METHOD.UPI].includes(method),fareLocked:true};
+  return {fare:base,extras:pass,customerTotal,platformCommission:commission,partnerEntitlement:partnerBase+pass,gatewayFee,gatewayFeeChargedToCustomer:0,platformNet:Math.max(0,commission-gatewayFee),directToPartner:[PAYMENT_METHOD.CASH,PAYMENT_METHOD.UPI_DIRECT].includes(method),fareLocked:true};
 }
 
 const ALLOWED_TYPES=new Set(['application/pdf','image/jpeg','image/png','image/webp']);
