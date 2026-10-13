@@ -11,8 +11,6 @@ const staticAccessToken=String(process.env.FCM_ACCESS_TOKEN||'').trim();
 const batchSize=Math.max(1,Math.min(Number(process.env.LOADIN_NOTIFICATION_BATCH||100),500));
 let oauthCache={token:null,expiresAt:0};
 
-if(!base||!serviceKey){console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');process.exit(2)}
-
 function parseServiceAccount(){
   const directEmail=String(process.env.FCM_CLIENT_EMAIL||'').trim();
   const directKey=String(process.env.FCM_PRIVATE_KEY||'').replaceAll('\\n','\n').trim();
@@ -24,6 +22,10 @@ function parseServiceAccount(){
 }
 const serviceAccount=parseServiceAccount();
 const projectId=String(process.env.FCM_PROJECT_ID||serviceAccount?.project_id||'').trim();
+function readiness(){const checks={supabase:Boolean(base&&serviceKey),fcmProject:Boolean(projectId),fcmCredentials:Boolean(staticAccessToken||(serviceAccount?.client_email&&serviceAccount?.private_key))};return {ok:Object.values(checks).every(Boolean),service:'loadin-notification-worker',authMode:staticAccessToken?'ACCESS_TOKEN':serviceAccount?'SERVICE_ACCOUNT':'UNCONFIGURED',checks,batchSize}}
+
+if(process.argv.includes('--check')){const r=readiness();console.log(JSON.stringify(r));process.exit(r.ok?0:2)}
+if(!base||!serviceKey){console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');process.exit(2)}
 
 function b64url(value){return Buffer.from(typeof value==='string'?value:JSON.stringify(value)).toString('base64url')}
 async function getFcmAccessToken(){
