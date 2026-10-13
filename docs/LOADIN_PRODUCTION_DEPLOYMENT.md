@@ -4,7 +4,7 @@ This runbook intentionally keeps all server secrets out of browser code.
 
 ## 1. Dedicated Supabase project
 1. Create a dedicated LOADIN Supabase project.
-2. Apply `supabase/migrations/001_...` through **053** in filename order.
+2. Apply `supabase/migrations/001_...` through **054** in filename order.
 3. Configure Phone OTP/SMS in Supabase Auth.
 4. Set production Site URL / redirect allow-list.
 5. Keep the service-role key only in trusted workers/server infrastructure.
@@ -62,6 +62,7 @@ Supported application routes include:
 - city/service pricing
 - Admin staff snapshot + staff access mutation
 - finance reconciliation snapshot/run/resolution
+- production launch-gate snapshot, manual evidence, release sign-off approval/revoke
 - Fleet vehicle/driver/assignment/status mutations
 
 Set browser `adminApiBase` to this service URL. If omitted, supported clients can fall back to the same authenticated scoped Supabase RPCs directly.
@@ -96,10 +97,28 @@ Recommended schedule: **daily and immediately before payout/release windows**. C
 
 Admin → Finance Reconciliation provides the same scoped on-demand run, issue review and audited Resolve/Ignore actions.
 
-## 8. Google Maps
+## 8. Launch Control and release sign-off
+Admin → Launch Control is the final operational gate. It combines live database checks with explicit real-device evidence.
+
+Dynamic blocking checks include:
+- active Super Admin, launch-city GM and Accounts staff,
+- launch city enabled,
+- all four service controls present and at least one intentionally ACTIVE,
+- every ACTIVE service has Fare Lock pricing,
+- approved partner supply and eligible vehicle supply where vehicle services are active,
+- a finance reconciliation completed in the last 24 hours,
+- zero open P0/P1 reconciliation issues,
+- zero unresolved CRITICAL SOS incidents,
+- zero unresolved URGENT/safety support cases.
+
+Manual evidence checks include production OTP, Razorpay signed webhook, restricted Google Maps, FCM push, security headers and Customer/Partner/Admin/Fleet real-device E2E. A required check may be waived only by Super Admin and a waiver must include evidence/reason.
+
+Creating a release sign-off stores the current gate snapshot and intended Git commit. Approval is refused if the live gate is no longer READY. Approving a sign-off **does not** deploy code or automatically enable services; it is an auditable go-live authorization record.
+
+## 9. Google Maps
 Use a browser key restricted by production HTTP referrers and only the Maps APIs LOADIN needs. No unrestricted key should be shipped.
 
-## 9. Cloud deployment blueprint
+## 10. Cloud deployment blueprint
 See `deploy/cloud-run/README.md` for container build/runtime layout for:
 - Portal API
 - Payment Worker
@@ -108,7 +127,7 @@ See `deploy/cloud-run/README.md` for container build/runtime layout for:
 
 Keep private values in Secret Manager or equivalent infrastructure secrets.
 
-## 10. Final smoke
+## 11. Final smoke
 After deployment run:
 
 ```bash
@@ -130,16 +149,37 @@ Then complete manual end-to-end QA for:
 - Admin role login → live ops → booking detail → partner review → staff scope → finance/reconciliation → safety/support
 - Fleet role login → vehicle/driver → assignment → compliance → dispatch/report
 
-## 11. Go-live gate
+Record the resulting evidence in Admin → Launch Control.
+
+## 12. Release preflight
+After a Super Admin has approved a release sign-off, run the automated launch preflight with a real Admin bearer token:
+
+```bash
+LOADIN_APP_BASE=https://YOUR_APP_DOMAIN \
+LOADIN_ADMIN_API_BASE=https://YOUR_PORTAL_API \
+LOADIN_ADMIN_BEARER_TOKEN=YOUR_SHORT_LIVED_ADMIN_JWT \
+LOADIN_LAUNCH_CITY=CSN \
+LOADIN_EXPECTED_COMMIT=THE_DEPLOYED_GIT_SHA \
+npm run preflight:launch
+```
+
+The command fails when a required production surface is unavailable, Portal API readiness fails, the launch gate is blocked, an approved release sign-off is missing, or the approved commit does not match the intended deployment.
+
+Do not save the short-lived Admin JWT in source control, `.env` files committed to Git, CI logs or browser configuration.
+
+## 13. Go-live gate
 Do not launch until all of the following are true:
 - Admin → Production Readiness shows no configuration blockers.
+- Admin → Launch Control shows **READY FOR SUPER ADMIN APPROVAL**.
 - First Super Admin and required city staff are assigned and verified.
 - Only deliberately enabled services are `ACTIVE`; unfinished services remain `COMING_SOON`/`PAUSED`.
 - Real OTP, Razorpay, Maps and FCM flows pass on production devices/browsers.
 - Payment webhook and settlement scenarios are reconciled.
-- Latest finance reconciliation has **zero open P0 issues**.
+- Latest finance reconciliation has **zero open P0/P1 issues**.
 - Payout workflow is tested from request → approve/process → paid/reject.
 - Production smoke and security-header smoke pass.
 - Customer, Partner, Admin and Fleet real-device E2E passes.
+- A release sign-off for the intended commit is APPROVED.
+- `npm run preflight:launch` passes against the deployed production environment.
 
 External credentials and real production transactions must be tested before claiming LOADIN live.
