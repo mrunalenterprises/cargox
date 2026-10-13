@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "preview": "node scripts/preview-server.mjs",
-    "test": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs && node scripts/payment-worker-contract-test.mjs && node --test",
+    "test": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs && node scripts/payment-worker-contract-test.mjs && node scripts/portal-api-contract-test.mjs && node --test",
     "check:migrations": "node scripts/check-migrations.mjs",
     "check:browser": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs",
     "config:write": "node scripts/write-runtime-config.mjs",
     "smoke:production": "node scripts/production-smoke.mjs",
     "smoke:headers": "node scripts/security-headers-smoke.mjs",
     "check:notifications": "node services/notification-worker/worker.mjs --check",
+    "check:portal": "node services/portal-api/worker.mjs --check",
     "check": "npm run check:migrations && npm test"
   }
 }
