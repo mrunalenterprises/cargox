@@ -51,12 +51,15 @@ jobs:
         run: |
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/onboarding-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/production-readiness-smoke.sql
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
         run: |
           node --check src/platform/supabase-rest.js
           node --check apps/shared/loadin-data.js
+          node --check apps/shared/partner-production.js
+          node --check apps/shared/admin-production.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
           node --check apps/partner-web/app.js
