@@ -30,7 +30,25 @@ export const authProduction={
   async identity(){if(!client.configured)return {user_id:'DEMO-USER',customer:{exists:true,full_name:'LOADIN Demo Customer',mobile:'+919999999999',email:'demo@loadin.local',city_code:'CSN'},partner:{exists:true,status:'ACTIVE'},admin:{exists:true,role:'SUPER_ADMIN'},fleet:{exists:true,account_id:'DEMO-FLEET'},demo:true};return client.rpc('get_my_loadin_identity')},
   async ensureCustomer({fullName=null,mobile=null,cityCode='CSN'}={}){if(!client.configured)return {user_id:'DEMO-CUSTOMER',full_name:fullName,mobile,city_code:cityCode,demo:true};return client.rpc('ensure_my_customer_profile',{p_full_name:fullName,p_mobile:mobile?normalizePhone(mobile):null,p_city_code:cityCode})},
   async updateCustomerProfile({fullName=null,email=null,cityCode=null}={}){if(!client.configured)return {user_id:'DEMO-CUSTOMER',full_name:fullName||'LOADIN Demo Customer',email:email||'demo@loadin.local',city_code:cityCode||'CSN',demo:true};return client.rpc('update_my_customer_profile',{p_full_name:fullName,p_email:email,p_city_code:cityCode})},
-  async authorizeRole(role){const r=safeRole(role);const identity=await this.identity();if(r==='CUSTOMER')return {allowed:true,identity};if(r==='PARTNER')return {allowed:true,identity,onboardingRequired:!identity?.partner};if(r==='ADMIN')return {allowed:Boolean(identity?.admin),identity,error:identity?.admin?null:'admin_access_not_assigned'};return {allowed:Boolean(identity?.fleet),identity,error:identity?.fleet?null:'fleet_access_not_assigned'}},
+  async bootstrapFirstSuperAdmin({displayName='LOADIN Super Admin'}={}){if(!client.configured)return {role:'SUPER_ADMIN',is_active:true,bootstrapped:true,demo:true};return client.rpc('loadin_bootstrap_first_super_admin',{p_display_name:displayName})},
+  async authorizeRole(role){
+    const r=safeRole(role);
+    let identity=await this.identity();
+    if(r==='CUSTOMER')return {allowed:true,identity};
+    if(r==='PARTNER')return {allowed:true,identity,onboardingRequired:!identity?.partner};
+    if(r==='ADMIN'){
+      if(identity?.admin)return {allowed:true,identity,bootstrapped:false};
+      try{
+        const bootstrap=await this.bootstrapFirstSuperAdmin();
+        identity=await this.identity();
+        if(identity?.admin)return {allowed:true,identity,bootstrapped:Boolean(bootstrap?.bootstrapped)};
+      }catch(error){
+        return {allowed:false,identity,error:String(error?.message||error||'admin_access_not_assigned')};
+      }
+      return {allowed:false,identity,error:'admin_access_not_assigned'};
+    }
+    return {allowed:Boolean(identity?.fleet),identity,error:identity?.fleet?null:'fleet_access_not_assigned'};
+  },
   async signOut(){return client.signOut()},
   safeRole,
   safeContinue
