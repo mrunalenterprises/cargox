@@ -11,6 +11,7 @@ const driverId='33333333-3333-4333-8333-333333333333';
 const assignmentId='44444444-4444-4444-8444-444444444444';
 const staffId='55555555-5555-4555-8555-555555555555';
 const issueId='66666666-6666-4666-8666-666666666666';
+const releaseId='77777777-7777-4777-8777-777777777777';
 
 const calls=[];
 const mock=http.createServer(async(req,res)=>{
@@ -25,6 +26,11 @@ const mock=http.createServer(async(req,res)=>{
   if(req.url.endsWith('/loadin_admin_finance_reconciliation_snapshot'))return res.end(JSON.stringify({role:'ACCOUNTS',latestRun:{status:'COMPLETED'},issues:[{id:issueId,status:'OPEN'}]}));
   if(req.url.endsWith('/loadin_admin_run_finance_reconciliation'))return res.end(JSON.stringify({status:'COMPLETED',openIssues:1,p0:0,p1:1}));
   if(req.url.endsWith('/loadin_admin_resolve_reconciliation_issue'))return res.end(JSON.stringify({id:issueId,status:'RESOLVED'}));
+  if(req.url.endsWith('/loadin_admin_launch_gate_snapshot'))return res.end(JSON.stringify({releaseReady:false,role:'SUPER_ADMIN',city:{code:'CSN'},checks:[{key:'CITY_ENABLED',status:'PASS'}],manualChecks:[{key:'OTP_REAL_DEVICE',status:'PENDING'}],signoffs:[]}));
+  if(req.url.endsWith('/loadin_admin_set_launch_check'))return res.end(JSON.stringify({key:'OTP_REAL_DEVICE',status:'PASS'}));
+  if(req.url.endsWith('/loadin_admin_create_release_signoff'))return res.end(JSON.stringify({id:releaseId,status:'DRAFT',releaseLabel:'LOADIN 1.0 RC1',cityCode:'CSN'}));
+  if(req.url.endsWith('/loadin_admin_approve_release_signoff'))return res.end(JSON.stringify({id:releaseId,status:'APPROVED'}));
+  if(req.url.endsWith('/loadin_admin_revoke_release_signoff'))return res.end(JSON.stringify({id:releaseId,status:'REVOKED'}));
   if(req.url.endsWith('/loadin_admin_resolve_support_case'))return res.end(JSON.stringify({id:supportId,status:'RESOLVED'}));
   if(req.url.endsWith('/loadin_admin_set_city_service_status'))return res.end(JSON.stringify({city_code:'CSN',service_code:'PARCEL_2W',status:'PAUSED'}));
   if(req.url.endsWith('/loadin_admin_city_service_config_snapshot'))return res.end(JSON.stringify({city:{code:'CSN',name:'CI City'},services:[{code:'PARCEL_2W',status:'ACTIVE',base_fare:35,extra_km_rate:8,commission_pct:15}]}));
@@ -63,6 +69,12 @@ try{
   r=await call('/admin/reconciliation/run',{method:'POST',headers:auth('accounts-token'),body:JSON.stringify({hours:168})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'COMPLETED');rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_hours,168);
   r=await call(`/admin/reconciliation/${issueId}/resolve`,{method:'POST',headers:auth('accounts-token'),body:JSON.stringify({status:'resolved',notes:'Matched bank ledger'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'RESOLVED');rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_issue_id,issueId);assert.equal(rpc.p_status,'RESOLVED');
 
+  r=await call('/admin/launch-gate?cityCode=csn',{headers:auth('admin-token')});assert.equal(r.status,200);j=await r.json();assert.equal(j.city.code,'CSN');rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_city_code,'CSN');
+  r=await call('/admin/launch-check',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({key:'otp_real_device',status:'pass',evidence:'Physical device verified'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'PASS');rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_check_key,'OTP_REAL_DEVICE');assert.equal(rpc.p_status,'PASS');
+  r=await call('/admin/release-signoff',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({releaseLabel:'LOADIN 1.0 RC1',commitSha:'abcdef1234567',cityCode:'csn',notes:'CI release'})});assert.equal(r.status,201);j=await r.json();assert.equal(j.id,releaseId);rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_city_code,'CSN');
+  r=await call(`/admin/release-signoff/${releaseId}/approve`,{method:'POST',headers:auth('admin-token'),body:JSON.stringify({notes:'Approved'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'APPROVED');
+  r=await call(`/admin/release-signoff/${releaseId}/revoke`,{method:'POST',headers:auth('admin-token'),body:JSON.stringify({notes:'Rollback'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'REVOKED');
+
   r=await call(`/admin/support/${supportId}/resolve`,{method:'POST',headers:auth('admin-token'),body:JSON.stringify({notes:'Resolved.'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'RESOLVED');
   r=await call('/admin/city-service-config?cityCode=csn',{headers:auth('admin-token')});assert.equal(r.status,200);j=await r.json();assert.equal(j.city.code,'CSN');rpc=JSON.parse(calls.at(-1).body);assert.equal(rpc.p_city_code,'CSN');
   r=await call('/admin/city-service-status',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({cityCode:'csn',serviceCode:'parcel_2w',status:'paused',reason:'Capacity control'})});assert.equal(r.status,200);j=await r.json();assert.equal(j.status,'PAUSED');
@@ -78,6 +90,8 @@ try{
   r=await call('/admin/staff',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({userId:'bad',role:'GM',cityCode:'CSN'})});assert.equal(r.status,400);
   r=await call('/admin/reconciliation/run',{method:'POST',headers:auth('accounts-token'),body:JSON.stringify({hours:999})});assert.equal(r.status,400);
   r=await call('/admin/reconciliation/not-a-uuid/resolve',{method:'POST',headers:auth('accounts-token'),body:'{}'});assert.equal(r.status,400);
+  r=await call('/admin/launch-check',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({key:'OTP_REAL_DEVICE',status:'BAD'})});assert.equal(r.status,400);
+  r=await call('/admin/release-signoff/not-a-uuid/approve',{method:'POST',headers:auth('admin-token'),body:'{}'});assert.equal(r.status,400);
   r=await call('/admin/city-pricing',{method:'POST',headers:auth('admin-token'),body:JSON.stringify({cityCode:'CSN',serviceCode:'PARCEL_2W',baseFare:-1,extraKmRate:9})});assert.equal(r.status,400);
   r=await call('/fleet/assignments',{method:'POST',headers:auth(),body:JSON.stringify({vehicleId:'bad',driverId})});assert.equal(r.status,400);
   r=await call('/admin/city-service-status',{method:'POST',headers:auth('admin-token'),body:'x'.repeat(3000)});assert.equal(r.status,413);
