@@ -19,6 +19,16 @@ const checks = [
     }
   },
   {
+    file: 'apps/admin-web/ops-settings.html',
+    require: ['const els=', 'els.mapStatus.textContent', 'els.customer.innerHTML'],
+    identifiers: { mapStatus:['textContent','classList'], customer:['innerHTML'] }
+  },
+  {
+    file: 'apps/admin-web/booking-detail.html',
+    require: ["const rootEl=document.querySelector('#root')", 'rootEl.innerHTML'],
+    identifiers: { root:['innerHTML'] }
+  },
+  {
     file: 'apps/fleet-web/compliance.html',
     require: ['const els=', 'els.kpis.innerHTML', 'els.rows.innerHTML'],
     identifiers: { kpis:['innerHTML'], rows:['innerHTML'] }
