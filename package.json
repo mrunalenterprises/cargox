@@ -10,6 +10,7 @@
     "check:browser": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs",
     "config:write": "node scripts/write-runtime-config.mjs",
     "smoke:production": "node scripts/production-smoke.mjs",
+    "smoke:headers": "node scripts/security-headers-smoke.mjs",
     "check:notifications": "node services/notification-worker/worker.mjs --check",
     "check": "npm run check:migrations && npm test"
   }
