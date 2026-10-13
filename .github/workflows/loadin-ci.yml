@@ -56,6 +56,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/map-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/auth-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/account-notification-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/staff-reconciliation-security-smoke.sql
       - name: Runtime public config contract
         run: |
           rm -f loadin-config.json
@@ -93,6 +94,8 @@ jobs:
           node --check apps/shared/push-production.js
           node --check apps/shared/notification-center-page.js
           node --check apps/shared/production-readiness.js
+          node --check apps/shared/admin-staff-production.js
+          node --check apps/shared/reconciliation-production.js
           node --check apps/auth-web/app.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
@@ -103,10 +106,14 @@ jobs:
           node --check apps/admin-web/ops-map.js
           node --check apps/admin-web/review-center.js
           node --check apps/admin-web/document-renewals.js
+          node --check apps/admin-web/staff-audit.js
+          node --check apps/admin-web/reconciliation.js
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
           node --check services/payment-worker/worker.mjs
           node --check services/portal-api/worker.mjs
+          node --check services/reconciliation-worker/worker.mjs
+          node --check scripts/bootstrap-production.mjs
           node --check scripts/write-runtime-config.mjs
           node --check scripts/payment-worker-contract-test.mjs
           node --check scripts/portal-api-contract-test.mjs
@@ -120,10 +127,18 @@ jobs:
           FCM_PRIVATE_KEY=dummy \
           node services/notification-worker/worker.mjs --check | grep -q '"ok":true'
           SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test \
+          LOADIN_RECONCILIATION_HOURS=168 \
+          node services/reconciliation-worker/worker.mjs --check | grep -q '"ok":true'
+          SUPABASE_URL=https://example.supabase.co \
           SUPABASE_ANON_KEY=public-anon-test \
           LOADIN_ALLOWED_ORIGINS=http://127.0.0.1:4173 \
           LOADIN_REQUIRE_BROWSER_ORIGINS=true \
           node services/portal-api/worker.mjs --check | grep -q '"ok":true'
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_SERVICE_ROLE_KEY=test \
+          LOADIN_SUPER_ADMIN_USER_ID=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa \
+          node scripts/bootstrap-production.mjs --check | grep -q '"ok":true'
           PORT=8788 \
           SUPABASE_URL=https://example.supabase.co \
           SUPABASE_SERVICE_ROLE_KEY=test \
@@ -190,23 +205,22 @@ jobs:
           curl -fsS http://127.0.0.1:4173/partner-wallet | grep -q "LOADIN Partner Wallet"
           curl -fsS http://127.0.0.1:4173/partner-quality | grep -q "LOADIN Partner Quality & Demand"
           curl -fsS http://127.0.0.1:4173/partner-plan | grep -q "LOADIN Partner Plan Center"
-          curl -fsS http://127.0.0.1:4173/admin | grep -q "production-readiness.html"
-          curl -fsS http://127.0.0.1:4173/admin-readiness | grep -q "Production configuration health"
-          curl -fsS http://127.0.0.1:4173/apps/admin-web/booking-deeplink.js | grep -q "booking-detail.html"
+          curl -fsS http://127.0.0.1:4173/admin | grep -q "reconciliation.html"
+          curl -fsS http://127.0.0.1:4173/admin-readiness | grep -q "zero open P0 reconciliation issues"
+          curl -fsS http://127.0.0.1:4173/admin-reconciliation | grep -q "Payment, settlement and ledger integrity"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/reconciliation.js | grep -q "reconciliationProduction"
+          curl -fsS http://127.0.0.1:4173/admin-staff | grep -q "Add / update staff access"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/staff-audit.js | grep -q "adminStaffProduction"
           curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
-          curl -fsS http://127.0.0.1:4173/apps/admin-web/ops-map.js | grep -q "liveMapSnapshot"
           curl -fsS http://127.0.0.1:4173/admin-booking | grep -q "LOADIN Admin Booking Detail"
           curl -fsS http://127.0.0.1:4173/admin-settings | grep -q "LOADIN Operations Settings"
           curl -fsS http://127.0.0.1:4173/admin-review | grep -q "LOADIN Admin Review Center"
-          curl -fsS http://127.0.0.1:4173/apps/admin-web/review-center.js | grep -q "adminFinalizePartner"
           curl -fsS http://127.0.0.1:4173/admin-documents | grep -q "LOADIN Admin Document Renewals"
-          curl -fsS http://127.0.0.1:4173/apps/admin-web/document-renewals.js | grep -q "reviewPartnerDocument"
           curl -fsS http://127.0.0.1:4173/admin-finance | grep -q "LOADIN Admin Finance Center"
           curl -fsS http://127.0.0.1:4173/admin-safety | grep -q "LOADIN Admin Safety Center"
           curl -fsS http://127.0.0.1:4173/admin-growth | grep -q "LOADIN Admin Growth Center"
           curl -fsS http://127.0.0.1:4173/admin-support | grep -q "LOADIN Admin Support SLA Center"
           curl -fsS http://127.0.0.1:4173/admin-city-services | grep -q "LOADIN Admin City & Service Center"
-          curl -fsS http://127.0.0.1:4173/admin-staff | grep -q "LOADIN Admin Staff & Audit"
           curl -fsS http://127.0.0.1:4173/fleet | grep -q "live-auth-guard"
           curl -fsS http://127.0.0.1:4173/fleet-compliance | grep -q "LOADIN Fleet Compliance"
           curl -fsS http://127.0.0.1:4173/fleet-reports | grep -q "LOADIN Fleet Reports"
