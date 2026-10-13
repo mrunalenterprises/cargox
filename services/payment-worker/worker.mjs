@@ -39,7 +39,7 @@ const server=http.createServer(async(req,res)=>{try{
   if(req.method==='POST'&&req.url==='/session'){
     const origin=requestOrigin(req);if(origin&&!allowedOrigin(req))return json(req,res,403,{error:'origin_not_allowed'});
     const token=bearer(req);if(!token)return json(req,res,401,{error:'login_required'});
-    const body=parseJson(await readBody(req,{maxBytes:32768}));if(!body.bookingId)return json(req,res,400,{error:'booking_id_required'});
+    const body=parseJson(await readBody(req,{maxBytes:Math.min(MAX_BODY_BYTES,32768)}));if(!body.bookingId)return json(req,res,400,{error:'booking_id_required'});
     const intent=await sbRpc('prepare_my_online_payment',{p_booking_id:body.bookingId},token);
     if(intent.status==='PAID')return json(req,res,200,{status:'PAID',paymentId:intent.payment_id,bookingId:intent.booking_id,amount:intent.amount,currency:intent.currency});
     if(PROVIDER!=='RAZORPAY')return json(req,res,503,{error:'payment_provider_not_supported',provider:PROVIDER});
