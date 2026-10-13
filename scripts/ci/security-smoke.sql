@@ -40,6 +40,7 @@ begin
   if to_regprocedure('public.loadin_admin_resolve_support_case(uuid,text)') is null then raise exception 'Missing loadin_admin_resolve_support_case RPC'; end if;
   if to_regprocedure('public.loadin_admin_set_city_service_status(text,text,text,text)') is null then raise exception 'Missing loadin_admin_set_city_service_status RPC'; end if;
   if to_regprocedure('public.loadin_fleet_snapshot()') is null then raise exception 'Missing loadin_fleet_snapshot RPC'; end if;
+  if to_regprocedure('public.set_customer_booking_payment_mode(uuid,text)') is null then raise exception 'Missing set_customer_booking_payment_mode RPC'; end if;
 end
 $$;
 
@@ -63,6 +64,7 @@ begin
   if has_function_privilege('anon', 'public.loadin_admin_resolve_support_case(uuid,text)', 'EXECUTE') then raise exception 'anon can resolve support'; end if;
   if has_function_privilege('anon', 'public.loadin_admin_set_city_service_status(text,text,text,text)', 'EXECUTE') then raise exception 'anon can mutate city service'; end if;
   if has_function_privilege('anon', 'public.loadin_fleet_snapshot()', 'EXECUTE') then raise exception 'anon can execute fleet snapshot'; end if;
+  if has_function_privilege('anon', 'public.set_customer_booking_payment_mode(uuid,text)', 'EXECUTE') then raise exception 'anon can set payment mode'; end if;
 
   select string_agg(p.proname, ', ' order by p.proname)
     into insecure
@@ -75,7 +77,7 @@ begin
       'open_customer_support_case','publish_partner_location','get_booking_tracking_snapshot',
       'mark_notification_opened','get_my_finance_summary','require_loadin_admin',
       'loadin_admin_dashboard_snapshot','loadin_admin_resolve_support_case',
-      'loadin_admin_set_city_service_status','loadin_fleet_snapshot'
+      'loadin_admin_set_city_service_status','loadin_fleet_snapshot','set_customer_booking_payment_mode'
     )
     and (
       not p.prosecdef
