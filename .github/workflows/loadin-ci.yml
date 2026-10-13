@@ -57,6 +57,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/auth-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/account-notification-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/staff-reconciliation-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/launch-control-security-smoke.sql
       - name: Runtime public config contract
         run: |
           rm -f loadin-config.json
@@ -96,6 +97,7 @@ jobs:
           node --check apps/shared/production-readiness.js
           node --check apps/shared/admin-staff-production.js
           node --check apps/shared/reconciliation-production.js
+          node --check apps/shared/launch-production.js
           node --check apps/auth-web/app.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
@@ -108,12 +110,14 @@ jobs:
           node --check apps/admin-web/document-renewals.js
           node --check apps/admin-web/staff-audit.js
           node --check apps/admin-web/reconciliation.js
+          node --check apps/admin-web/launch-control.js
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
           node --check services/payment-worker/worker.mjs
           node --check services/portal-api/worker.mjs
           node --check services/reconciliation-worker/worker.mjs
           node --check scripts/bootstrap-production.mjs
+          node --check scripts/launch-preflight.mjs
           node --check scripts/write-runtime-config.mjs
           node --check scripts/payment-worker-contract-test.mjs
           node --check scripts/portal-api-contract-test.mjs
@@ -139,6 +143,11 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY=test \
           LOADIN_SUPER_ADMIN_USER_ID=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa \
           node scripts/bootstrap-production.mjs --check | grep -q '"ok":true'
+          LOADIN_APP_BASE=https://app.example.com \
+          LOADIN_ADMIN_API_BASE=https://api.example.com \
+          LOADIN_ADMIN_BEARER_TOKEN=test-token \
+          LOADIN_LAUNCH_CITY=CSN \
+          node scripts/launch-preflight.mjs --check | grep -q '"ok":true'
           PORT=8788 \
           SUPABASE_URL=https://example.supabase.co \
           SUPABASE_SERVICE_ROLE_KEY=test \
@@ -205,12 +214,15 @@ jobs:
           curl -fsS http://127.0.0.1:4173/partner-wallet | grep -q "LOADIN Partner Wallet"
           curl -fsS http://127.0.0.1:4173/partner-quality | grep -q "LOADIN Partner Quality & Demand"
           curl -fsS http://127.0.0.1:4173/partner-plan | grep -q "LOADIN Partner Plan Center"
-          curl -fsS http://127.0.0.1:4173/admin | grep -q "reconciliation.html"
+          curl -fsS http://127.0.0.1:4173/admin | grep -q "launch-control.html"
           curl -fsS http://127.0.0.1:4173/admin-readiness | grep -q "zero open P0 reconciliation issues"
           curl -fsS http://127.0.0.1:4173/admin-reconciliation | grep -q "Payment, settlement and ledger integrity"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/reconciliation.js | grep -q "reconciliationProduction"
           curl -fsS http://127.0.0.1:4173/admin-staff | grep -q "Add / update staff access"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/staff-audit.js | grep -q "adminStaffProduction"
+          curl -fsS http://127.0.0.1:4173/admin-launch | grep -q "Production release gate"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/launch-control.js | grep -q "launchProduction"
+          curl -fsS http://127.0.0.1:4173/apps/shared/launch-production.js | grep -q "createSignoff"
           curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
           curl -fsS http://127.0.0.1:4173/admin-booking | grep -q "LOADIN Admin Booking Detail"
           curl -fsS http://127.0.0.1:4173/admin-settings | grep -q "LOADIN Operations Settings"
