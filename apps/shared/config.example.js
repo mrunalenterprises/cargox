@@ -1,5 +1,6 @@
-// Copy these values into deployment-time window.__LOADIN_CONFIG__ before app.js loads.
-// Never put a Supabase service-role key, Firebase service-account private key, or payment secret in browser code.
+// Preferred production setup: generate /loadin-config.json with `npm run config:write`.
+// This injected object remains supported as an optional deployment-time override.
+// Never put a Supabase service-role/secret key, Firebase service-account private key, or payment secret in browser code.
 window.__LOADIN_CONFIG__ = {
   supabaseUrl: 'https://YOUR_PROJECT.supabase.co',
   supabaseAnonKey: 'YOUR_PUBLIC_ANON_KEY',
