@@ -1,0 +1,82 @@
+name: LOADIN Fleet CI
+
+on:
+  push:
+    branches: [loadin-build]
+    paths:
+      - 'apps/fleet-web/**'
+      - 'apps/shared/fleet-production.js'
+      - 'services/portal-api/**'
+      - 'scripts/portal-api-contract-test.mjs'
+      - 'scripts/ci/fleet-security-smoke.sql'
+      - 'supabase/migrations/049_fleet_mutation_rpcs.sql'
+      - 'supabase/migrations/050_fleet_snapshot_v2.sql'
+      - '.github/workflows/loadin-fleet-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/fleet-web/**'
+      - 'apps/shared/fleet-production.js'
+      - 'services/portal-api/**'
+      - 'scripts/portal-api-contract-test.mjs'
+      - 'scripts/ci/fleet-security-smoke.sql'
+      - 'supabase/migrations/049_fleet_mutation_rpcs.sql'
+      - 'supabase/migrations/050_fleet_snapshot_v2.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  fleet-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: loadin_fleet_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d loadin_fleet_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bootstrap database
+        run: psql -h 127.0.0.1 -U postgres -d loadin_fleet_ci -v ON_ERROR_STOP=1 -f scripts/ci/fresh-db-bootstrap.sql
+      - name: Apply full migration chain
+        run: |
+          set -euo pipefail
+          for file in supabase/migrations/*.sql; do
+            psql -h 127.0.0.1 -U postgres -d loadin_fleet_ci -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+      - name: Fleet security and mutation smoke
+        run: psql -h 127.0.0.1 -U postgres -d loadin_fleet_ci -v ON_ERROR_STOP=1 -f scripts/ci/fleet-security-smoke.sql
+      - name: Portal API contracts
+        run: node scripts/portal-api-contract-test.mjs
+      - name: Fleet frontend syntax
+        run: |
+          node --check apps/shared/fleet-production.js
+          node --check apps/fleet-web/app.js
+          node --check services/portal-api/worker.mjs
+      - name: Fleet preview contract
+        run: |
+          node scripts/preview-server.mjs >/tmp/loadin-fleet-preview.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/fleet >/tmp/fleet.html; then break; fi
+            sleep 0.25
+          done
+          grep -q 'modalRoot' /tmp/fleet.html
+          curl -fsS http://127.0.0.1:4173/apps/fleet-web/app.js | grep -q 'fleetProduction.assignDriver'
+          curl -fsS http://127.0.0.1:4173/apps/shared/fleet-production.js | grep -q 'loadin_fleet_add_vehicle'
