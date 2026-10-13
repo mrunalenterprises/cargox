@@ -1,6 +1,6 @@
 import { createSupabaseRestClient } from '../../src/platform/supabase-rest.js';
+import { runtimeConfig as cfg } from './runtime-config.js';
 
-const cfg=globalThis.__LOADIN_CONFIG__||{};
 const client=createSupabaseRestClient({url:cfg.supabaseUrl,anonKey:cfg.supabaseAnonKey});
 const firebaseConfig=cfg.firebaseConfig||null;
 const vapidKey=String(cfg.firebaseVapidKey||'').trim();
