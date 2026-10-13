@@ -53,6 +53,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/onboarding-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/production-readiness-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/payment-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/map-security-smoke.sql
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
@@ -62,11 +63,13 @@ jobs:
           node --check apps/shared/partner-production.js
           node --check apps/shared/admin-production.js
           node --check apps/shared/payment-production.js
+          node --check apps/shared/maps-production.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
           node --check apps/partner-web/app.js
           node --check apps/partner-web/onboarding.js
           node --check apps/admin-web/app.js
+          node --check apps/admin-web/ops-map.js
           node --check apps/admin-web/review-center.js
           node --check apps/admin-web/document-renewals.js
           node --check apps/fleet-web/app.js
@@ -85,7 +88,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "LOADIN Customer"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
-          curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "bookingTrackingSnapshot"
+          curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "googleMapsProduction"
+          curl -fsS http://127.0.0.1:4173/apps/shared/maps-production.js | grep -q "renderTrackingMap"
           curl -fsS http://127.0.0.1:4173/customer-checkout | grep -q "Secure online payment"
           curl -fsS http://127.0.0.1:4173/apps/shared/payment-production.js | grep -q "createSession"
           curl -fsS http://127.0.0.1:4173/customer-recurring | grep -q "LOADIN Recurring Routes"
@@ -105,6 +109,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/partner-plan | grep -q "LOADIN Partner Plan Center"
           curl -fsS http://127.0.0.1:4173/admin | grep -q "LOADIN Admin"
           curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/ops-map.js | grep -q "liveMapSnapshot"
           curl -fsS http://127.0.0.1:4173/admin-booking | grep -q "LOADIN Admin Booking Detail"
           curl -fsS http://127.0.0.1:4173/admin-settings | grep -q "LOADIN Operations Settings"
           curl -fsS http://127.0.0.1:4173/admin-review | grep -q "LOADIN Admin Review Center"
