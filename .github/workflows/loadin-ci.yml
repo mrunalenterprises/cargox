@@ -66,6 +66,7 @@ jobs:
           node --check apps/partner-web/onboarding.js
           node --check apps/admin-web/app.js
           node --check apps/admin-web/review-center.js
+          node --check apps/admin-web/document-renewals.js
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
       - name: Preview smoke
@@ -102,6 +103,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/admin-settings | grep -q "LOADIN Operations Settings"
           curl -fsS http://127.0.0.1:4173/admin-review | grep -q "LOADIN Admin Review Center"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/review-center.js | grep -q "adminFinalizePartner"
+          curl -fsS http://127.0.0.1:4173/admin-documents | grep -q "LOADIN Admin Document Renewals"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/document-renewals.js | grep -q "reviewPartnerDocument"
           curl -fsS http://127.0.0.1:4173/admin-finance | grep -q "LOADIN Admin Finance Center"
           curl -fsS http://127.0.0.1:4173/admin-safety | grep -q "LOADIN Admin Safety Center"
           curl -fsS http://127.0.0.1:4173/admin-growth | grep -q "LOADIN Admin Growth Center"
