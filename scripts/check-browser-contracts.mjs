@@ -12,6 +12,13 @@ const checks = [
     identifiers: { fare:['value'], pct:['value'] }
   },
   {
+    file: 'apps/partner-web/documents.html',
+    require: ['const els=', 'els.modeLine.textContent', 'els.grid.innerHTML', 'els.count.textContent', 'els.bar.style.width', 'els.review.onclick'],
+    identifiers: {
+      modeLine:['textContent'], grid:['innerHTML'], count:['textContent'], bar:['style'], review:['onclick'], message:['textContent']
+    }
+  },
+  {
     file: 'apps/fleet-web/compliance.html',
     require: ['const els=', 'els.kpis.innerHTML', 'els.rows.innerHTML'],
     identifiers: { kpis:['innerHTML'], rows:['innerHTML'] }
