@@ -56,11 +56,32 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/map-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/auth-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/account-notification-security-smoke.sql
+      - name: Runtime public config contract
+        run: |
+          rm -f loadin-config.json
+          LOADIN_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+          LOADIN_PUBLIC_SUPABASE_ANON_KEY=public-anon-test \
+          LOADIN_PUBLIC_GOOGLE_MAPS_API_KEY=browser-map-test \
+          LOADIN_PUBLIC_PAYMENT_PROVIDER=RAZORPAY \
+          LOADIN_PUBLIC_PAYMENT_KEY=rzp_test_public \
+          LOADIN_PUBLIC_PAYMENT_API_BASE=https://payments.example.com/loadin \
+          LOADIN_PUBLIC_ADMIN_API_BASE=https://api.example.com/loadin \
+          LOADIN_PUBLIC_FIREBASE_API_KEY=firebase-public \
+          LOADIN_PUBLIC_FIREBASE_AUTH_DOMAIN=example.firebaseapp.com \
+          LOADIN_PUBLIC_FIREBASE_PROJECT_ID=example \
+          LOADIN_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456 \
+          LOADIN_PUBLIC_FIREBASE_APP_ID=app-public \
+          LOADIN_PUBLIC_FIREBASE_VAPID_KEY=vapid-public \
+          node scripts/write-runtime-config.mjs | grep -q '"ok":true'
+          node -e "const c=require('./loadin-config.json'); if(c.supabaseUrl!=='https://example.supabase.co'||c.paymentProvider!=='RAZORPAY') process.exit(1)"
+          ! grep -Eiq 'service[_-]?role|private[_-]?key|key[_-]?secret|webhook[_-]?secret' loadin-config.json
+          rm -f loadin-config.json
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
         run: |
           node --check src/platform/supabase-rest.js
+          node --check apps/shared/runtime-config.js
           node --check apps/shared/loadin-data.js
           node --check apps/shared/partner-production.js
           node --check apps/shared/admin-production.js
@@ -69,6 +90,7 @@ jobs:
           node --check apps/shared/auth-production.js
           node --check apps/shared/live-auth-guard.js
           node --check apps/shared/notifications-production.js
+          node --check apps/shared/push-production.js
           node --check apps/shared/notification-center-page.js
           node --check apps/shared/production-readiness.js
           node --check apps/auth-web/app.js
@@ -84,6 +106,7 @@ jobs:
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
           node --check services/payment-worker/worker.mjs
+          node --check scripts/write-runtime-config.mjs
           node --check scripts/production-smoke.mjs
       - name: Worker readiness contracts
         run: |
@@ -100,6 +123,7 @@ jobs:
           RAZORPAY_KEY_ID=rzp_test_dummy \
           RAZORPAY_KEY_SECRET=dummy \
           RAZORPAY_WEBHOOK_SECRET=dummy \
+          LOADIN_ALLOWED_ORIGINS=http://127.0.0.1:4173 \
           node services/payment-worker/worker.mjs > /tmp/loadin-payment.log 2>&1 &
           PAYMENT_PID=$!
           trap 'kill $PAYMENT_PID || true' EXIT
@@ -109,6 +133,9 @@ jobs:
           done
           grep -q 'loadin-payment-worker' /tmp/payment-health.json
           curl -fsS http://127.0.0.1:8788/ready | grep -q '"ok":true'
+          curl -fsS -X OPTIONS -H 'Origin: http://127.0.0.1:4173' http://127.0.0.1:8788/session -D /tmp/cors-headers.txt -o /dev/null
+          grep -qi 'access-control-allow-origin: http://127.0.0.1:4173' /tmp/cors-headers.txt
+          test "$(curl -sS -o /tmp/blocked.json -w '%{http_code}' -X POST -H 'Origin: https://evil.example' -H 'Content-Type: application/json' -d '{"bookingId":"X"}' http://127.0.0.1:8788/session)" = "403"
           kill $PAYMENT_PID || true
           trap - EXIT
       - name: Preview smoke
@@ -122,6 +149,8 @@ jobs:
           done
           grep -q "LOADIN Preview" /tmp/preview.html
           grep -q "Secure Login / OTP" /tmp/preview.html
+          curl -fsS http://127.0.0.1:4173/apps/shared/runtime-config.js | grep -q "loadPublicConfig"
+          curl -fsS http://127.0.0.1:4173/loadin-config.example.json | grep -q "supabaseAnonKey"
           curl -fsS http://127.0.0.1:4173/auth | grep -q "Secure sign in"
           curl -fsS http://127.0.0.1:4173/apps/auth-web/app.js | grep -q "verifyOtp"
           curl -fsS http://127.0.0.1:4173/apps/shared/auth-production.js | grep -q "get_my_loadin_identity"
