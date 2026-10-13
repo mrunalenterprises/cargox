@@ -17,7 +17,7 @@ function readiness(){const checks={supabase:Boolean(SUPABASE_URL&&SUPABASE_ANON_
 async function readBody(req,{maxBytes=MAX_BODY_BYTES}={}){const chunks=[];let total=0;for await(const c of req){total+=c.length;if(total>maxBytes){const e=new Error('request_body_too_large');e.status=413;throw e}chunks.push(c)}return Buffer.concat(chunks,total)}
 function parseJson(raw){try{return JSON.parse(raw.toString('utf8')||'{}')}catch{const e=new Error('invalid_json');e.status=400;throw e}}
 function safeUuid(value){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||''))}
-function normalizeUpstreamStatus(status,data){if(status===401)return 401;if(status===403)return 403;const msg=String(data?.message||data?.error||'');if(/authentication_required|jwt|token/i.test(msg))return 401;if(/access_required|not_allowed|scope_denied|permission|forbidden|requires_/i.test(msg))return 403;if(/not_found/i.test(msg))return 404;if(/already_exists|conflict|active_assignment_conflict|unique/i.test(msg))return 409;return status>=400&&status<500?400:502}
+function normalizeUpstreamStatus(status,data){if(status===401)return 401;if(status===403)return 403;const msg=String(data?.message||data?.error||'');if(/authentication_required|jwt|token/i.test(msg))return 401;if(/access_required|not_allowed|scope_denied|permission|forbidden|requires_|cannot_disable|gm_may_manage/i.test(msg))return 403;if(/not_found/i.test(msg))return 404;if(/already_exists|conflict|active_assignment_conflict|unique/i.test(msg))return 409;return status>=400&&status<500?400:502}
 async function sbRpc(name,args,token){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(name)}`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify(args||{})});const text=await r.text();let data;try{data=text?JSON.parse(text):null}catch{data={message:text}}if(!r.ok){const e=new Error(data?.message||data?.error||`supabase_${r.status}`);e.status=normalizeUpstreamStatus(r.status,data);e.data=data;throw e}return data}
 function requireAuth(req){const token=bearer(req);if(!token){const e=new Error('login_required');e.status=401;throw e}return token}
 function assertOrigin(req){const origin=requestOrigin(req);if(origin&&!allowedOrigin(req)){const e=new Error('origin_not_allowed');e.status=403;throw e}if(REQUIRE_BROWSER_ORIGINS&&!origin){const e=new Error('origin_required');e.status=403;throw e}}
@@ -39,6 +39,8 @@ export async function handlePortalRequest(req,res){
 
     if(req.method==='GET'&&url.pathname==='/dashboard')return json(req,res,200,await sbRpc('loadin_admin_dashboard_snapshot',{},token));
     if(req.method==='GET'&&url.pathname==='/fleet/me')return json(req,res,200,await sbRpc('loadin_fleet_snapshot',{},token));
+    if(req.method==='GET'&&url.pathname==='/admin/staff')return json(req,res,200,await sbRpc('loadin_admin_staff_snapshot',{},token));
+    if(req.method==='GET'&&url.pathname==='/admin/reconciliation')return json(req,res,200,await sbRpc('loadin_admin_finance_reconciliation_snapshot',{},token));
     if(req.method==='GET'&&url.pathname==='/admin/city-service-config'){
       const cityCode=smallText(url.searchParams.get('cityCode')||'CSN',24).toUpperCase();
       return json(req,res,200,await sbRpc('loadin_admin_city_service_config_snapshot',{p_city_code:cityCode},token));
@@ -49,6 +51,24 @@ export async function handlePortalRequest(req,res){
       if(!safeUuid(supportMatch[1]))return json(req,res,400,{error:'invalid_case_id'});
       const body=parseJson(await readBody(req));
       return json(req,res,200,await sbRpc('loadin_admin_resolve_support_case',{p_case_id:supportMatch[1],p_resolution_notes:String(body.notes||'Resolved by admin').slice(0,2000)},token));
+    }
+    if(req.method==='POST'&&url.pathname==='/admin/staff'){
+      const body=parseJson(await readBody(req));
+      const userId=smallText(body.userId,64),role=smallText(body.role,32).toUpperCase(),cityCode=smallText(body.cityCode,24).toUpperCase()||null;
+      if(!safeUuid(userId)||!['SUPER_ADMIN','GM','ACCOUNTS','FIELD_OFFICER'].includes(role))return json(req,res,400,{error:'invalid_staff_request'});
+      return json(req,res,200,await sbRpc('loadin_admin_upsert_staff',{p_user_id:userId,p_role:role,p_city_code:cityCode,p_display_name:smallText(body.displayName,120)||null,p_is_active:body.isActive!==false,p_reason:String(body.reason||'').slice(0,1000)||null},token));
+    }
+    if(req.method==='POST'&&url.pathname==='/admin/reconciliation/run'){
+      const body=parseJson(await readBody(req));const hours=Math.trunc(Number(body.hours??168));
+      if(!Number.isFinite(hours)||hours<1||hours>744)return json(req,res,400,{error:'invalid_reconciliation_hours'});
+      return json(req,res,200,await sbRpc('loadin_admin_run_finance_reconciliation',{p_hours:hours},token));
+    }
+    const reconcileMatch=url.pathname.match(/^\/admin\/reconciliation\/([^/]+)\/resolve$/);
+    if(req.method==='POST'&&reconcileMatch){
+      if(!safeUuid(reconcileMatch[1]))return json(req,res,400,{error:'invalid_reconciliation_issue_id'});
+      const body=parseJson(await readBody(req));const status=smallText(body.status||'RESOLVED',24).toUpperCase();
+      if(!['RESOLVED','IGNORED'].includes(status))return json(req,res,400,{error:'invalid_reconciliation_resolution'});
+      return json(req,res,200,await sbRpc('loadin_admin_resolve_reconciliation_issue',{p_issue_id:reconcileMatch[1],p_status:status,p_notes:String(body.notes||'').slice(0,2000)||null},token));
     }
     if(req.method==='POST'&&url.pathname==='/admin/city-service-status'){
       const body=parseJson(await readBody(req));
@@ -111,10 +131,6 @@ export async function handlePortalRequest(req,res){
 }
 
 export const portalReadiness=readiness;
-
-if(process.argv.includes('--check')){
-  const r=readiness();console.log(JSON.stringify(r));process.exit(r.ok?0:1);
-}
-
+if(process.argv.includes('--check')){const r=readiness();console.log(JSON.stringify(r));process.exit(r.ok?0:1)}
 const server=http.createServer(handlePortalRequest);
 server.listen(PORT,'0.0.0.0',()=>console.log(`LOADIN portal API listening on :${PORT}`));
