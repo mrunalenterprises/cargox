@@ -176,9 +176,11 @@ jobs:
           PREVIEW_PID=$!
           trap 'kill $PREVIEW_PID || true' EXIT
           for i in {1..20}; do
-            if curl -fsS http://127.0.0.1:4173/ > /tmp/preview.html; then break; fi
+            if curl -fsS http://127.0.0.1:4173/ > /tmp/website-root.html; then break; fi
             sleep 0.25
           done
+          grep -q "Move Anything." /tmp/website-root.html
+          curl -fsS http://127.0.0.1:4173/preview > /tmp/preview.html
           grep -q "LOADIN Preview" /tmp/preview.html
           grep -q "Secure Login / OTP" /tmp/preview.html
           curl -fsS http://127.0.0.1:4173/apps/shared/runtime-config.js | grep -q "loadPublicConfig"
@@ -189,8 +191,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/apps/shared/live-auth-guard.js | grep -q "enforceLiveAuth"
           curl -fsS http://127.0.0.1:4173/apps/shared/notifications-production.js | grep -q "get_my_notification_center"
           curl -fsS http://127.0.0.1:4173/apps/shared/production-readiness.js | grep -q "portalApiHealth"
-          curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
-          curl -fsS http://127.0.0.1:4173/customer | grep -q "Account & Security"
+          curl -fsS http://127.0.0.1:4173/website | grep -q "Move Anything."
+          curl -fsS http://127.0.0.1:4173/customer | grep -q "Book Fast."
           curl -fsS http://127.0.0.1:4173/customer-account | grep -q "Account & Security"
           curl -fsS http://127.0.0.1:4173/customer-notifications | grep -q "Trip & account alerts"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
@@ -203,7 +205,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/customer-rewards | grep -q "LOADIN Rewards & Favourites"
           curl -fsS http://127.0.0.1:4173/customer-reliability | grep -q "LOADIN Customer Reliability & Cargo Protection"
           curl -fsS http://127.0.0.1:4173/customer-shifting | grep -q "LOADIN Full Shifting Planner"
-          curl -fsS http://127.0.0.1:4173/partner | grep -q "notifications.html"
+          curl -fsS http://127.0.0.1:4173/partner | grep -q "Go Online."
           curl -fsS http://127.0.0.1:4173/partner-notifications | grep -q "Jobs, trips & payouts"
           curl -fsS http://127.0.0.1:4173/partner-readiness | grep -q "Go Online Readiness"
           curl -fsS http://127.0.0.1:4173/partner-onboarding | grep -q "LOADIN Partner Onboarding"
