@@ -5,6 +5,20 @@ begin
   if has_function_privilege('anon','public.loadin_admin_create_release_signoff(text,text,text,text)','EXECUTE') then raise exception 'anon release signoff access'; end if;
 end $$;
 
+-- Main CI runs staff/reconciliation smoke before this file. Remove that test's deliberately
+-- broken completed-booking fixture so this launch-gate smoke validates a clean release state.
+delete from public.finance_reconciliation_issues
+where booking_id in (
+  select id from public.bookings
+  where customer_id='11111111-1111-4111-8111-111111111111'::uuid
+    and partner_id='22222222-2222-4222-8222-222222222222'::uuid
+    and status='COMPLETED' and locked_fare=1000
+);
+delete from public.bookings
+where customer_id='11111111-1111-4111-8111-111111111111'::uuid
+  and partner_id='22222222-2222-4222-8222-222222222222'::uuid
+  and status='COMPLETED' and locked_fare=1000;
+
 insert into auth.users(id) values
 ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
 ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
