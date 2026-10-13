@@ -55,6 +55,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/payment-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/map-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/auth-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/account-notification-security-smoke.sql
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
@@ -67,6 +68,8 @@ jobs:
           node --check apps/shared/maps-production.js
           node --check apps/shared/auth-production.js
           node --check apps/shared/live-auth-guard.js
+          node --check apps/shared/notifications-production.js
+          node --check apps/shared/notification-center-page.js
           node --check apps/auth-web/app.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
@@ -94,8 +97,10 @@ jobs:
           curl -fsS http://127.0.0.1:4173/apps/auth-web/app.js | grep -q "verifyOtp"
           curl -fsS http://127.0.0.1:4173/apps/shared/auth-production.js | grep -q "get_my_loadin_identity"
           curl -fsS http://127.0.0.1:4173/apps/shared/live-auth-guard.js | grep -q "enforceLiveAuth"
+          curl -fsS http://127.0.0.1:4173/apps/shared/notifications-production.js | grep -q "get_my_notification_center"
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
-          curl -fsS http://127.0.0.1:4173/customer | grep -q "live-auth-guard"
+          curl -fsS http://127.0.0.1:4173/customer | grep -q "notifications.html"
+          curl -fsS http://127.0.0.1:4173/customer-notifications | grep -q "Trip & account alerts"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
           curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "googleMapsProduction"
           curl -fsS http://127.0.0.1:4173/apps/shared/maps-production.js | grep -q "renderTrackingMap"
@@ -106,7 +111,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/customer-rewards | grep -q "LOADIN Rewards & Favourites"
           curl -fsS http://127.0.0.1:4173/customer-reliability | grep -q "LOADIN Customer Reliability & Cargo Protection"
           curl -fsS http://127.0.0.1:4173/customer-shifting | grep -q "LOADIN Full Shifting Planner"
-          curl -fsS http://127.0.0.1:4173/partner | grep -q "live-auth-guard"
+          curl -fsS http://127.0.0.1:4173/partner | grep -q "notifications.html"
+          curl -fsS http://127.0.0.1:4173/partner-notifications | grep -q "Jobs, trips & payouts"
           curl -fsS http://127.0.0.1:4173/partner-readiness | grep -q "Go Online Readiness"
           curl -fsS http://127.0.0.1:4173/partner-onboarding | grep -q "LOADIN Partner Onboarding"
           curl -fsS http://127.0.0.1:4173/apps/partner-web/onboarding.js | grep -q "submitPartnerOnboarding"
