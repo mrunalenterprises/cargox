@@ -1,0 +1,47 @@
+name: LOADIN Push CI
+
+on:
+  push:
+    branches: [loadin-build]
+    paths:
+      - 'apps/shared/push-production.js'
+      - 'apps/shared/notification-center-page.js'
+      - 'apps/shared/config.example.js'
+      - 'firebase-messaging-sw.js'
+      - 'services/notification-worker/**'
+      - 'supabase/migrations/048_push_device_management.sql'
+      - 'scripts/ci/account-notification-security-smoke.sql'
+      - '.github/workflows/loadin-push-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/shared/push-production.js'
+      - 'firebase-messaging-sw.js'
+      - 'services/notification-worker/**'
+
+permissions:
+  contents: read
+
+jobs:
+  push-syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check apps/shared/push-production.js
+          node --check apps/shared/notification-center-page.js
+          node --check firebase-messaging-sw.js
+          node --check services/notification-worker/worker.mjs
+      - name: Production contract smoke
+        run: |
+          grep -q "upsert_my_push_token" apps/shared/push-production.js
+          grep -q "deactivate_my_push_device" apps/shared/push-production.js
+          grep -q "firebaseVapidKey" apps/shared/config.example.js
+          grep -q "oauth2.googleapis.com/token" services/notification-worker/worker.mjs
+          grep -q "firebase-messaging-compat.js" firebase-messaging-sw.js
+          grep -q "get_my_push_devices" supabase/migrations/048_push_device_management.sql
