@@ -76,6 +76,7 @@ jobs:
           node --check apps/partner-web/app.js
           node --check apps/partner-web/onboarding.js
           node --check apps/admin-web/app.js
+          node --check apps/admin-web/booking-deeplink.js
           node --check apps/admin-web/ops-map.js
           node --check apps/admin-web/review-center.js
           node --check apps/admin-web/document-renewals.js
@@ -99,7 +100,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/apps/shared/live-auth-guard.js | grep -q "enforceLiveAuth"
           curl -fsS http://127.0.0.1:4173/apps/shared/notifications-production.js | grep -q "get_my_notification_center"
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
-          curl -fsS http://127.0.0.1:4173/customer | grep -q "notifications.html"
+          curl -fsS http://127.0.0.1:4173/customer | grep -q "Account & Security"
+          curl -fsS http://127.0.0.1:4173/customer-account | grep -q "Account & Security"
           curl -fsS http://127.0.0.1:4173/customer-notifications | grep -q "Trip & account alerts"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
           curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "googleMapsProduction"
@@ -122,7 +124,8 @@ jobs:
           curl -fsS http://127.0.0.1:4173/partner-wallet | grep -q "LOADIN Partner Wallet"
           curl -fsS http://127.0.0.1:4173/partner-quality | grep -q "LOADIN Partner Quality & Demand"
           curl -fsS http://127.0.0.1:4173/partner-plan | grep -q "LOADIN Partner Plan Center"
-          curl -fsS http://127.0.0.1:4173/admin | grep -q "live-auth-guard"
+          curl -fsS http://127.0.0.1:4173/admin | grep -q "booking-deeplink.js"
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/booking-deeplink.js | grep -q "booking-detail.html"
           curl -fsS http://127.0.0.1:4173/admin-map | grep -q "LOADIN Admin Live Ops Map"
           curl -fsS http://127.0.0.1:4173/apps/admin-web/ops-map.js | grep -q "liveMapSnapshot"
           curl -fsS http://127.0.0.1:4173/admin-booking | grep -q "LOADIN Admin Booking Detail"
