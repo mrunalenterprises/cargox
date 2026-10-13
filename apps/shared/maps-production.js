@@ -1,4 +1,5 @@
-const cfg=globalThis.__LOADIN_CONFIG__||{};
+import { runtimeConfig as cfg } from './runtime-config.js';
+
 const key=String(cfg.googleMapsApiKey||'').trim();
 let loader=null;
 function cleanPoints(points=[]){return points.map(p=>({lat:Number(p.latitude),lng:Number(p.longitude),capturedAt:p.captured_at||p.capturedAt||null})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)&&Math.abs(p.lat)<=90&&Math.abs(p.lng)<=180)}
