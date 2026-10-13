@@ -19,18 +19,18 @@ begin
     raise exception 'authentication_required' using errcode='42501';
   end if;
 
-  insert into public.customer_profiles(user_id, full_name, mobile, city_code, updated_at)
+  insert into public.customer_profiles as cp(user_id, full_name, mobile, city_code, updated_at)
   values (
     v_uid,
     nullif(trim(coalesce(p_full_name,'')),''),
     nullif(trim(coalesce(p_mobile,'')),''),
-    nullif(trim(coalesce(p_city_code,'')),'') ,
+    nullif(trim(coalesce(p_city_code,'')),''),
     now()
   )
   on conflict (user_id) do update set
-    full_name = coalesce(excluded.full_name, public.customer_profiles.full_name),
-    mobile = coalesce(excluded.mobile, public.customer_profiles.mobile),
-    city_code = coalesce(excluded.city_code, public.customer_profiles.city_code),
+    full_name = coalesce(excluded.full_name, cp.full_name),
+    mobile = coalesce(excluded.mobile, cp.mobile),
+    city_code = coalesce(excluded.city_code, cp.city_code),
     updated_at = now()
   returning * into v_row;
 
