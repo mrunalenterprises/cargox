@@ -54,6 +54,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/production-readiness-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/payment-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/map-security-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/auth-security-smoke.sql
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
@@ -64,6 +65,8 @@ jobs:
           node --check apps/shared/admin-production.js
           node --check apps/shared/payment-production.js
           node --check apps/shared/maps-production.js
+          node --check apps/shared/auth-production.js
+          node --check apps/auth-web/app.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
           node --check apps/partner-web/app.js
@@ -85,6 +88,9 @@ jobs:
             sleep 0.25
           done
           grep -q "LOADIN Preview" /tmp/preview.html
+          curl -fsS http://127.0.0.1:4173/auth | grep -q "Secure sign in"
+          curl -fsS http://127.0.0.1:4173/apps/auth-web/app.js | grep -q "verifyOtp"
+          curl -fsS http://127.0.0.1:4173/apps/shared/auth-production.js | grep -q "get_my_loadin_identity"
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "LOADIN Customer"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
