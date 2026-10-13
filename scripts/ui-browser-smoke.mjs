@@ -27,14 +27,17 @@ try{
       const u=r.url();
       if(r.status()>=400&&u.startsWith(base)&&!u.endsWith('/favicon.ico'))errors.push(`http ${r.status()}: ${u.slice(base.length)}`);
     });
-    const response=await page.goto(`${base}${c.path}`,{waitUntil:'networkidle',timeout:15000});
-    await page.waitForFunction(text=>document.body?.innerText?.includes(text),c.visible,{timeout:8000}).catch(()=>{});
-    const body=await page.locator('body').innerText();
-    const title=await page.title();
+    let response=null;
+    try{
+      response=await page.goto(`${base}${c.path}`,{waitUntil:'domcontentloaded',timeout:15000});
+      await page.waitForFunction(text=>document.body?.innerText?.includes(text),c.visible,{timeout:10000});
+    }catch(e){errors.push(`navigation: ${e.message}`)}
+    const body=await page.locator('body').innerText().catch(()=> '');
+    const title=await page.title().catch(()=> '');
     const titleOk=title.includes(c.title);
     const visibleOk=body.includes(c.visible);
     const ok=Boolean(response?.ok())&&titleOk&&visibleOk&&errors.length===0;
-    await page.screenshot({path:`${out}/${c.name}.png`,fullPage:true});
+    await page.screenshot({path:`${out}/${c.name}.png`,fullPage:true}).catch(()=>{});
     results.push({name:c.name,path:c.path,status:response?.status()||0,title,expectedTitle:c.title,titleOk,expectedVisible:c.visible,visibleOk,errors,ok});
     await page.close();
   }
