@@ -4,8 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>LOADIN Customer</title>
-  <meta name="description" content="LOADIN — transparent, reliable local logistics with Fare Lock, verified partners and live trip proof." />
+  <meta name="description" content="LOADIN — book fast, track live and move easy with Fare Lock, verified partners and live trip proof." />
   <meta name="theme-color" content="#ff7a00" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -24,7 +27,7 @@
   </div>
   <template id="homeTemplate">
     <section class="city-status-bar" id="cityStatusBar"><div><span class="status-dot"></span><strong>Service live in Chhatrapati Sambhaji Nagar</strong></div><small>Fare Lock + verified partners</small></section>
-    <section class="hero-card"><div class="hero-copy"><span class="eyebrow">AI SMART BOOKING</span><h1>Move anything.<br />Book in seconds.</h1><p>Describe the goods, pickup and drop. LOADIN recommends the right service, vehicle and verified partner.</p><div class="hero-pills"><span>Fare Lock</span><span>OTP Proof</span><span>Live Tracking</span></div></div><div class="hero-orb"><span>AI</span><small>Smart Match</small></div></section>
+    <section class="hero-card"><div class="hero-copy"><span class="eyebrow">LOADIN CUSTOMER APP</span><h1>Book Fast.<br />Track Live.<br /><span style="color:#ff9d38">Move Easy.</span></h1><p>2-Wheeler Parcel, Loading Vehicle, Helper and Full Shifting — one account, one live booking experience.</p><div class="hero-pills"><span>Fare Lock</span><span>Live Tracking</span><span>OTP Proof</span><span>Verified Partners</span></div></div><div class="hero-orb"><span>GO</span><small>LOADIN</small></div></section>
     <section class="booking-card"><div class="booking-card-head"><div><span class="eyebrow dark">QUICK BOOKING</span><h2>What are you moving?</h2></div><span class="seconds-pill">~30 sec</span></div><label class="field-label" for="goodsInput">Goods / Item</label><div class="input-row"><input id="goodsInput" type="text" placeholder="e.g. 12 boxes, fridge, office material" autocomplete="off" /><button class="mini-button" id="voiceButton" type="button" title="Voice input">🎙</button><button class="mini-button" id="photoButton" type="button" title="Add photo">📷</button></div><div class="route-grid"><label><span>Pickup</span><div class="route-input pickup"><input id="pickupInput" type="text" placeholder="Pickup location" value="Cidco, Sambhaji Nagar" /></div></label><label><span>Drop</span><div class="route-input drop"><input id="dropInput" type="text" placeholder="Drop location" value="Waluj MIDC" /></div></label></div><div class="segmented" role="group" aria-label="Booking time"><button class="segment active" data-time="now" type="button">Now</button><button class="segment" data-time="schedule" type="button">Schedule</button></div><div id="scheduleRow" class="schedule-row hidden"><input id="scheduleDate" type="date" /><input id="scheduleTime" type="time" /></div><div id="bookingHint" class="booking-hint hidden"></div><button class="primary-button" id="findButton" type="button">Find best option <span>→</span></button><p class="trust-copy">Fare Lock • Verified Partners • Live Tracking • Pickup & Delivery OTP</p></section>
     <section><div class="section-heading"><div><span class="eyebrow dark">SERVICES</span><h2>What do you need today?</h2></div><small class="section-note">Tap any card</small></div><div class="service-grid" id="serviceGrid"><button class="service-card" data-service="parcel" type="button"><div class="service-visual parcel"><img src="./assets/parcel.svg" alt="2-Wheeler Parcel" data-service-image="parcel" /><span class="service-fallback">▰</span></div><div><strong>2-Wheeler Parcel</strong><small>Small parcels & documents</small></div><span class="service-arrow">→</span></button><button class="service-card" data-service="loading" type="button"><div class="service-visual loading"><img src="./assets/loading.svg" alt="Loading Vehicle" data-service-image="loading" /><span class="service-fallback">▱</span></div><div><strong>Loading Vehicle</strong><small>3W, Tata Ace, Pickup & trucks</small></div><span class="service-arrow">→</span></button><button class="service-card" data-service="helper" type="button"><div class="service-visual helper"><img src="./assets/helper.svg" alt="Helper" data-service-image="helper" /><span class="service-fallback">♙</span></div><div><strong>Helper</strong><small>Loading, unloading & lifting</small></div><span class="service-arrow">→</span></button><button class="service-card" data-service="shifting" type="button"><div class="service-visual shifting"><img src="./assets/shifting.svg" alt="Full Shifting" data-service-image="shifting" /><span class="service-fallback">⌂</span></div><div><strong>Full Shifting</strong><small>Pack, move & unpack</small></div><span class="service-arrow">→</span></button></div></section>
     <section class="repeat-card"><div><span class="eyebrow dark">BOOK AGAIN</span><h3>Office material • Cidco → Waluj</h3><p>Last used: Loading Vehicle • Tata Ace</p></div><button class="secondary-button" id="bookAgainButton" type="button">Book Again</button></section>
@@ -32,6 +35,7 @@
     <section id="resultsSection" class="results-section hidden"><div class="section-heading"><div><span class="eyebrow dark">AI MATCHES</span><h2>Best options for you</h2></div><span class="fare-lock-pill">🔒 Fare Locked</span></div><div id="resultCards" class="result-list"></div></section>
   </template>
   <script type="module" src="../shared/live-auth-guard.js"></script>
+  <script type="module" src="../shared/pwa-register.js"></script>
   <script type="module" src="./app.js"></script>
 </body>
 </html>
