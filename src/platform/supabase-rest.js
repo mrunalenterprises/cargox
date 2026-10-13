@@ -20,7 +20,7 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
   function accessToken(){return readSession()?.access_token||null}
   function authHeaders(extra={}){
     const token=accessToken();
-    return {'apikey':key,'Authorization':`Bearer ${token||key}`,...extra};
+    return {'apikey':key,...(token?{'Authorization':`Bearer ${token}`}:{ }),...extra};
   }
   function headers(extra={}){return authHeaders({'Content-Type':'application/json',...extra})}
   async function parseResponse(res){
