@@ -1,0 +1,82 @@
+name: LOADIN Admin CI
+
+on:
+  push:
+    branches: [loadin-build]
+    paths:
+      - 'apps/admin-web/city-service-center.html'
+      - 'apps/admin-web/city-service-center.js'
+      - 'apps/shared/city-service-production.js'
+      - 'services/portal-api/**'
+      - 'scripts/portal-api-contract-test.mjs'
+      - 'scripts/ci/admin-city-pricing-smoke.sql'
+      - 'supabase/migrations/051_admin_city_pricing_rpcs.sql'
+      - '.github/workflows/loadin-admin-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/admin-web/city-service-center.html'
+      - 'apps/admin-web/city-service-center.js'
+      - 'apps/shared/city-service-production.js'
+      - 'services/portal-api/**'
+      - 'scripts/portal-api-contract-test.mjs'
+      - 'scripts/ci/admin-city-pricing-smoke.sql'
+      - 'supabase/migrations/051_admin_city_pricing_rpcs.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  admin-city-pricing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: loadin_admin_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d loadin_admin_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bootstrap database
+        run: psql -h 127.0.0.1 -U postgres -d loadin_admin_ci -v ON_ERROR_STOP=1 -f scripts/ci/fresh-db-bootstrap.sql
+      - name: Apply full migration chain
+        run: |
+          set -euo pipefail
+          for file in supabase/migrations/*.sql; do
+            psql -h 127.0.0.1 -U postgres -d loadin_admin_ci -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+      - name: Admin city pricing security smoke
+        run: psql -h 127.0.0.1 -U postgres -d loadin_admin_ci -v ON_ERROR_STOP=1 -f scripts/ci/admin-city-pricing-smoke.sql
+      - name: Portal API contracts
+        run: node scripts/portal-api-contract-test.mjs
+      - name: Admin frontend syntax
+        run: |
+          node --check apps/shared/city-service-production.js
+          node --check apps/admin-web/city-service-center.js
+          node --check services/portal-api/worker.mjs
+      - name: Admin preview contract
+        run: |
+          node scripts/preview-server.mjs >/tmp/loadin-admin-preview.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/admin-city-services >/tmp/city.html; then break; fi
+            sleep 0.25
+          done
+          grep -q 'City & Service Control Center' /tmp/city.html
+          curl -fsS http://127.0.0.1:4173/apps/admin-web/city-service-center.js | grep -q 'setPricing'
+          curl -fsS http://127.0.0.1:4173/apps/shared/city-service-production.js | grep -q 'loadin_admin_set_city_pricing'
