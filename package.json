@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "preview": "node scripts/preview-server.mjs",
-    "test": "node scripts/check-browser-contracts.mjs && node --test",
+    "test": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node --test",
     "check:migrations": "node scripts/check-migrations.mjs",
-    "check:browser": "node scripts/check-browser-contracts.mjs",
+    "check:browser": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs",
     "smoke:production": "node scripts/production-smoke.mjs",
     "check:notifications": "node services/notification-worker/worker.mjs --check",
     "check": "npm run check:migrations && npm test"
