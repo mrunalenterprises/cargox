@@ -22,6 +22,7 @@ async function sbRpc(name,args,token){const r=await fetch(`${SUPABASE_URL}/rest/
 function requireAuth(req){const token=bearer(req);if(!token){const e=new Error('login_required');e.status=401;throw e}return token}
 function assertOrigin(req){const origin=requestOrigin(req);if(origin&&!allowedOrigin(req)){const e=new Error('origin_not_allowed');e.status=403;throw e}if(REQUIRE_BROWSER_ORIGINS&&!origin){const e=new Error('origin_required');e.status=403;throw e}}
 function smallText(v,max=120){return String(v??'').trim().slice(0,max)}
+function finiteMoney(v){const n=Number(v);return Number.isFinite(n)?n:null}
 
 export async function handlePortalRequest(req,res){
   try{
@@ -38,6 +39,10 @@ export async function handlePortalRequest(req,res){
 
     if(req.method==='GET'&&url.pathname==='/dashboard')return json(req,res,200,await sbRpc('loadin_admin_dashboard_snapshot',{},token));
     if(req.method==='GET'&&url.pathname==='/fleet/me')return json(req,res,200,await sbRpc('loadin_fleet_snapshot',{},token));
+    if(req.method==='GET'&&url.pathname==='/admin/city-service-config'){
+      const cityCode=smallText(url.searchParams.get('cityCode')||'CSN',24).toUpperCase();
+      return json(req,res,200,await sbRpc('loadin_admin_city_service_config_snapshot',{p_city_code:cityCode},token));
+    }
 
     const supportMatch=url.pathname.match(/^\/admin\/support\/([^/]+)\/resolve$/);
     if(req.method==='POST'&&supportMatch){
@@ -52,6 +57,14 @@ export async function handlePortalRequest(req,res){
       const status=smallText(body.status,24).toUpperCase();
       if(!cityCode||!serviceCode||!['ACTIVE','COMING_SOON','PAUSED','DISABLED'].includes(status))return json(req,res,400,{error:'invalid_city_service_request'});
       return json(req,res,200,await sbRpc('loadin_admin_set_city_service_status',{p_city_code:cityCode,p_service_code:serviceCode,p_status:status,p_reason:String(body.reason||'').slice(0,1000)||null},token));
+    }
+    if(req.method==='POST'&&url.pathname==='/admin/city-pricing'){
+      const body=parseJson(await readBody(req));
+      const cityCode=smallText(body.cityCode,24).toUpperCase();
+      const serviceCode=smallText(body.serviceCode,80).toUpperCase();
+      const baseFare=finiteMoney(body.baseFare),extraKmRate=finiteMoney(body.extraKmRate);
+      if(!cityCode||!serviceCode||baseFare===null||extraKmRate===null||baseFare<0||extraKmRate<0)return json(req,res,400,{error:'invalid_city_pricing_request'});
+      return json(req,res,200,await sbRpc('loadin_admin_set_city_pricing',{p_city_code:cityCode,p_service_code:serviceCode,p_base_fare:baseFare,p_extra_km_rate:extraKmRate,p_reason:String(body.reason||'').slice(0,1000)||null},token));
     }
 
     if(req.method==='POST'&&url.pathname==='/fleet/vehicles'){
