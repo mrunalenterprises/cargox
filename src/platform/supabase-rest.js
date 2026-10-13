@@ -40,6 +40,12 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
   async function refreshSession(){const refresh_token=readSession()?.refresh_token;if(!refresh_token)throw new Error('refresh_token_missing');const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token}});saveSession(data);return data}
   async function getUser(){return request('/auth/v1/user')}
   function signOutLocal(){saveSession(null)}
+  async function signOut(){
+    if(!configured){signOutLocal();return {local:true}}
+    const hadToken=Boolean(accessToken());
+    try{if(hadToken)await request('/auth/v1/logout',{method:'POST'})}finally{signOutLocal()}
+    return {signedOut:true}
+  }
   async function select(table,{select='*',filters={},order,limit}={}){
     const qs=new URLSearchParams({select});
     Object.entries(filters).forEach(([k,v])=>{if(v!==undefined&&v!==null)qs.set(k,String(v))});
@@ -69,5 +75,5 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
     });
     return parseResponse(res);
   }
-  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOutLocal,select,insert,update,rpc,uploadObject};
+  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOut,signOutLocal,select,insert,update,rpc,uploadObject};
 }
