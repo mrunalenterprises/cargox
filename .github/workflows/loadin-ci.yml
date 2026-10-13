@@ -106,7 +106,10 @@ jobs:
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
           node --check services/payment-worker/worker.mjs
+          node --check services/portal-api/worker.mjs
           node --check scripts/write-runtime-config.mjs
+          node --check scripts/payment-worker-contract-test.mjs
+          node --check scripts/portal-api-contract-test.mjs
           node --check scripts/production-smoke.mjs
       - name: Worker readiness contracts
         run: |
@@ -116,6 +119,11 @@ jobs:
           FCM_CLIENT_EMAIL=test@example.com \
           FCM_PRIVATE_KEY=dummy \
           node services/notification-worker/worker.mjs --check | grep -q '"ok":true'
+          SUPABASE_URL=https://example.supabase.co \
+          SUPABASE_ANON_KEY=public-anon-test \
+          LOADIN_ALLOWED_ORIGINS=http://127.0.0.1:4173 \
+          LOADIN_REQUIRE_BROWSER_ORIGINS=true \
+          node services/portal-api/worker.mjs --check | grep -q '"ok":true'
           PORT=8788 \
           SUPABASE_URL=https://example.supabase.co \
           SUPABASE_SERVICE_ROLE_KEY=test \
@@ -156,7 +164,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/apps/shared/auth-production.js | grep -q "get_my_loadin_identity"
           curl -fsS http://127.0.0.1:4173/apps/shared/live-auth-guard.js | grep -q "enforceLiveAuth"
           curl -fsS http://127.0.0.1:4173/apps/shared/notifications-production.js | grep -q "get_my_notification_center"
-          curl -fsS http://127.0.0.1:4173/apps/shared/production-readiness.js | grep -q "paymentHealth"
+          curl -fsS http://127.0.0.1:4173/apps/shared/production-readiness.js | grep -q "portalApiHealth"
           curl -fsS http://127.0.0.1:4173/website | grep -q "LOADIN — Local Logistics"
           curl -fsS http://127.0.0.1:4173/customer | grep -q "Account & Security"
           curl -fsS http://127.0.0.1:4173/customer-account | grep -q "Account & Security"
