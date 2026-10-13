@@ -4,12 +4,16 @@ const out=process.env.LOADIN_CONFIG_OUT||'loadin-config.json';
 const env=process.env;
 function req(name,{optional=false}={}){const v=String(env[name]||'').trim();if(!v&&!optional)throw new Error(`missing_${name}`);return v}
 function rejectSecret(name,value){if(!value)return;const upper=name.toUpperCase();if(upper.includes('SERVICE_ROLE')||upper.includes('PRIVATE_KEY')||upper.includes('KEY_SECRET')||upper.includes('WEBHOOK_SECRET'))throw new Error(`server_secret_forbidden_in_public_config:${name}`)}
+function jwtPayload(value){try{const parts=String(value||'').split('.');if(parts.length!==3)return null;return JSON.parse(Buffer.from(parts[1],'base64url').toString('utf8'))}catch{return null}}
+function assertPublicSupabaseKey(value){const key=String(value||'').trim();if(/^sb_secret_/i.test(key))throw new Error('supabase_secret_key_forbidden_in_public_config');const payload=jwtPayload(key);if(String(payload?.role||'').toLowerCase()==='service_role')throw new Error('supabase_service_role_forbidden_in_public_config')}
 
 for(const [name,value] of Object.entries(env)){
   if(!name.startsWith('LOADIN_PUBLIC_'))continue;
   rejectSecret(name,value);
 }
 
+const supabaseAnonKey=req('LOADIN_PUBLIC_SUPABASE_ANON_KEY');
+assertPublicSupabaseKey(supabaseAnonKey);
 const firebase={
   apiKey:req('LOADIN_PUBLIC_FIREBASE_API_KEY',{optional:true}),
   authDomain:req('LOADIN_PUBLIC_FIREBASE_AUTH_DOMAIN',{optional:true}),
@@ -20,7 +24,7 @@ const firebase={
 };
 const config={
   supabaseUrl:req('LOADIN_PUBLIC_SUPABASE_URL'),
-  supabaseAnonKey:req('LOADIN_PUBLIC_SUPABASE_ANON_KEY'),
+  supabaseAnonKey,
   googleMapsApiKey:req('LOADIN_PUBLIC_GOOGLE_MAPS_API_KEY',{optional:true}),
   paymentProvider:req('LOADIN_PUBLIC_PAYMENT_PROVIDER',{optional:true})||'RAZORPAY',
   paymentPublicKey:req('LOADIN_PUBLIC_PAYMENT_KEY',{optional:true}),
