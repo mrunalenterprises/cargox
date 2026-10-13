@@ -6,9 +6,10 @@ const out=process.env.LOADIN_UI_ARTIFACT_DIR||'artifacts/ui-smoke';
 await mkdir(out,{recursive:true});
 
 const cases=[
-  {name:'website',path:'/website',title:'LOADIN',visible:'Move anything.'},
-  {name:'customer',path:'/customer',title:'LOADIN Customer',visible:'Move anything.'},
-  {name:'partner',path:'/partner',title:'LOADIN Partner',visible:'You are Offline'},
+  {name:'website-root',path:'/',title:'LOADIN',visible:'Move Anything.'},
+  {name:'website',path:'/website',title:'LOADIN',visible:'Move Anything.'},
+  {name:'customer',path:'/customer',title:'LOADIN Customer',visible:'Book Fast.'},
+  {name:'partner',path:'/partner',title:'LOADIN Partner',visible:'Go Online.'},
   {name:'admin',path:'/admin',title:'LOADIN Admin',visible:'LOADIN OPERATIONS'},
   {name:'admin-launch',path:'/admin-launch',title:'LOADIN Launch Control',visible:'Production release gate'},
   {name:'admin-readiness',path:'/admin-readiness',title:'LOADIN Production Readiness',visible:'Production configuration health'},
