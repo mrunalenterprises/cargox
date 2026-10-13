@@ -52,6 +52,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/onboarding-security-smoke.sql
           psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/production-readiness-smoke.sql
+          psql -h 127.0.0.1 -U postgres -d loadin_ci -v ON_ERROR_STOP=1 -f scripts/ci/payment-security-smoke.sql
       - name: Domain tests
         run: npm test
       - name: Frontend syntax smoke
@@ -60,6 +61,7 @@ jobs:
           node --check apps/shared/loadin-data.js
           node --check apps/shared/partner-production.js
           node --check apps/shared/admin-production.js
+          node --check apps/shared/payment-production.js
           node --check apps/customer-web/app.js
           node --check apps/customer-web/experience.js
           node --check apps/partner-web/app.js
@@ -69,6 +71,7 @@ jobs:
           node --check apps/admin-web/document-renewals.js
           node --check apps/fleet-web/app.js
           node --check services/notification-worker/worker.mjs
+          node --check services/payment-worker/worker.mjs
       - name: Preview smoke
         run: |
           node scripts/preview-server.mjs > /tmp/loadin-preview.log 2>&1 &
@@ -83,16 +86,19 @@ jobs:
           curl -fsS http://127.0.0.1:4173/customer | grep -q "LOADIN Customer"
           curl -fsS http://127.0.0.1:4173/customer-experience | grep -q "LOADIN Trip Experience"
           curl -fsS http://127.0.0.1:4173/apps/customer-web/experience.js | grep -q "bookingTrackingSnapshot"
-          curl -fsS http://127.0.0.1:4173/customer-checkout | grep -q "LOADIN Checkout"
+          curl -fsS http://127.0.0.1:4173/customer-checkout | grep -q "Secure online payment"
+          curl -fsS http://127.0.0.1:4173/apps/shared/payment-production.js | grep -q "createSession"
           curl -fsS http://127.0.0.1:4173/customer-recurring | grep -q "LOADIN Recurring Routes"
           curl -fsS http://127.0.0.1:4173/customer-business | grep -q "LOADIN Business Account"
           curl -fsS http://127.0.0.1:4173/customer-rewards | grep -q "LOADIN Rewards & Favourites"
           curl -fsS http://127.0.0.1:4173/customer-reliability | grep -q "LOADIN Customer Reliability & Cargo Protection"
           curl -fsS http://127.0.0.1:4173/customer-shifting | grep -q "LOADIN Full Shifting Planner"
           curl -fsS http://127.0.0.1:4173/partner | grep -q "LOADIN Partner"
+          curl -fsS http://127.0.0.1:4173/partner-readiness | grep -q "Go Online Readiness"
           curl -fsS http://127.0.0.1:4173/partner-onboarding | grep -q "LOADIN Partner Onboarding"
           curl -fsS http://127.0.0.1:4173/apps/partner-web/onboarding.js | grep -q "submitPartnerOnboarding"
           curl -fsS http://127.0.0.1:4173/partner-documents | grep -q "LOADIN Partner Documents"
+          curl -fsS http://127.0.0.1:4173/partner-renewals | grep -q "LOADIN Document Renewals"
           curl -fsS http://127.0.0.1:4173/partner-special | grep -q "LOADIN Special Jobs"
           curl -fsS http://127.0.0.1:4173/partner-wallet | grep -q "LOADIN Partner Wallet"
           curl -fsS http://127.0.0.1:4173/partner-quality | grep -q "LOADIN Partner Quality & Demand"
