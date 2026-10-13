@@ -11,6 +11,7 @@ const RAZORPAY_WEBHOOK_SECRET=process.env.RAZORPAY_WEBHOOK_SECRET||'';
 
 function json(res,status,body){res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store'});res.end(JSON.stringify(body))}
 function configured(){return Boolean(SUPABASE_URL&&SERVICE_ROLE)}
+function readiness(){const checks={supabase:Boolean(SUPABASE_URL&&SERVICE_ROLE),providerSupported:PROVIDER==='RAZORPAY',providerCredentials:Boolean(RAZORPAY_KEY_ID&&RAZORPAY_KEY_SECRET),webhookSecret:Boolean(RAZORPAY_WEBHOOK_SECRET)};return {ok:Object.values(checks).every(Boolean),provider:PROVIDER,checks}}
 async function readBody(req){const chunks=[];for await(const c of req)chunks.push(c);return Buffer.concat(chunks)}
 async function sbRpc(name,args,token=SERVICE_ROLE){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(name)}`,{method:'POST',headers:{apikey:SERVICE_ROLE,Authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify(args||{})});const text=await r.text();let data;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const e=new Error(data?.message||data?.error||`supabase_${r.status}`);e.status=r.status;e.data=data;throw e}return data}
 async function createRazorpayOrder({paymentId,amount,currency='INR'}){if(!RAZORPAY_KEY_ID||!RAZORPAY_KEY_SECRET)throw new Error('razorpay_not_configured');const paise=Math.round(Number(amount)*100);const auth=Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');const r=await fetch('https://api.razorpay.com/v1/orders',{method:'POST',headers:{Authorization:`Basic ${auth}`,'content-type':'application/json'},body:JSON.stringify({amount:paise,currency,receipt:`loadin_${paymentId}`,notes:{payment_id:paymentId,product:'LOADIN'}})});const text=await r.text();let data;try{data=JSON.parse(text)}catch{data={raw:text}}if(!r.ok)throw new Error(data?.error?.description||`razorpay_${r.status}`);return data}
@@ -20,7 +21,8 @@ function eventId(raw,headers){return String(headers['x-razorpay-event-id']||cryp
 function extractRazorpayPayment(payload){const payment=payload?.payload?.payment?.entity||{};const order=payload?.payload?.order?.entity||{};return {eventType:String(payload?.event||''),orderId:payment.order_id||order.id||null,paymentId:payment.id||null,amountPaise:payment.amount??order.amount_paid??null}}
 
 const server=http.createServer(async(req,res)=>{try{
-  if(req.method==='GET'&&req.url==='/health')return json(res,200,{ok:true,provider:PROVIDER,supabase:configured(),razorpay:Boolean(RAZORPAY_KEY_ID&&RAZORPAY_KEY_SECRET)});
+  if(req.method==='GET'&&req.url==='/health')return json(res,200,{ok:true,service:'loadin-payment-worker',provider:PROVIDER});
+  if(req.method==='GET'&&req.url==='/ready'){const r=readiness();return json(res,r.ok?200:503,r)}
   if(!configured())return json(res,503,{error:'payment_worker_not_configured'});
 
   if(req.method==='POST'&&req.url==='/session'){
