@@ -36,6 +36,10 @@ begin
   if to_regprocedure('public.get_booking_tracking_snapshot(uuid)') is null then raise exception 'Missing get_booking_tracking_snapshot RPC'; end if;
   if to_regprocedure('public.mark_notification_opened(uuid)') is null then raise exception 'Missing mark_notification_opened RPC'; end if;
   if to_regprocedure('public.get_my_finance_summary()') is null then raise exception 'Missing get_my_finance_summary RPC'; end if;
+  if to_regprocedure('public.loadin_admin_dashboard_snapshot()') is null then raise exception 'Missing loadin_admin_dashboard_snapshot RPC'; end if;
+  if to_regprocedure('public.loadin_admin_resolve_support_case(uuid,text)') is null then raise exception 'Missing loadin_admin_resolve_support_case RPC'; end if;
+  if to_regprocedure('public.loadin_admin_set_city_service_status(text,text,text,text)') is null then raise exception 'Missing loadin_admin_set_city_service_status RPC'; end if;
+  if to_regprocedure('public.loadin_fleet_snapshot()') is null then raise exception 'Missing loadin_fleet_snapshot RPC'; end if;
 end
 $$;
 
@@ -55,6 +59,10 @@ begin
   if has_function_privilege('anon', 'public.get_booking_tracking_snapshot(uuid)', 'EXECUTE') then raise exception 'anon can execute get_booking_tracking_snapshot'; end if;
   if has_function_privilege('anon', 'public.mark_notification_opened(uuid)', 'EXECUTE') then raise exception 'anon can execute mark_notification_opened'; end if;
   if has_function_privilege('anon', 'public.get_my_finance_summary()', 'EXECUTE') then raise exception 'anon can execute get_my_finance_summary'; end if;
+  if has_function_privilege('anon', 'public.loadin_admin_dashboard_snapshot()', 'EXECUTE') then raise exception 'anon can execute admin dashboard'; end if;
+  if has_function_privilege('anon', 'public.loadin_admin_resolve_support_case(uuid,text)', 'EXECUTE') then raise exception 'anon can resolve support'; end if;
+  if has_function_privilege('anon', 'public.loadin_admin_set_city_service_status(text,text,text,text)', 'EXECUTE') then raise exception 'anon can mutate city service'; end if;
+  if has_function_privilege('anon', 'public.loadin_fleet_snapshot()', 'EXECUTE') then raise exception 'anon can execute fleet snapshot'; end if;
 
   select string_agg(p.proname, ', ' order by p.proname)
     into insecure
@@ -65,7 +73,9 @@ begin
       'set_partner_availability','get_my_dispatch_offers','respond_to_dispatch_offer',
       'add_partner_booking_proof','advance_partner_booking','cancel_customer_booking',
       'open_customer_support_case','publish_partner_location','get_booking_tracking_snapshot',
-      'mark_notification_opened','get_my_finance_summary'
+      'mark_notification_opened','get_my_finance_summary','require_loadin_admin',
+      'loadin_admin_dashboard_snapshot','loadin_admin_resolve_support_case',
+      'loadin_admin_set_city_service_status','loadin_fleet_snapshot'
     )
     and (
       not p.prosecdef
