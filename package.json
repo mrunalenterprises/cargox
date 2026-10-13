@@ -7,6 +7,8 @@
     "preview": "node scripts/preview-server.mjs",
     "test": "node --test",
     "check:migrations": "node scripts/check-migrations.mjs",
+    "smoke:production": "node scripts/production-smoke.mjs",
+    "check:notifications": "node services/notification-worker/worker.mjs --check",
     "check": "npm run check:migrations && npm test"
   }
 }
