@@ -1,0 +1,7 @@
+# LOADIN generated deployment-time public config
+loadin-config.json
+
+# Local environment files
+.env
+.env.*
+!.env.example
