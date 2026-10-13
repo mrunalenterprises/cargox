@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "preview": "node scripts/preview-server.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
     "test": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs && node scripts/payment-worker-contract-test.mjs && node scripts/portal-api-contract-test.mjs && npm run check:ops && node --test",
     "check:migrations": "node scripts/check-migrations.mjs",
     "check:browser": "node scripts/check-inline-modules.mjs && node scripts/check-browser-contracts.mjs && node scripts/check-runtime-config-usage.mjs",
