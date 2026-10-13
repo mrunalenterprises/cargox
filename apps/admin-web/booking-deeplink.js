@@ -1,0 +1,1 @@
+document.addEventListener('click',event=>{const button=event.target.closest?.('[data-booking]');if(!button)return;const bookingId=button.dataset.booking;if(!bookingId)return;event.preventDefault();event.stopImmediatePropagation();location.href=`./booking-detail.html?id=${encodeURIComponent(bookingId)}`},true);
