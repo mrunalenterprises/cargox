@@ -15,7 +15,9 @@ function rewrite(text){let s=String(text);for(const n of [...names].sort((a,b)=>
 function addBase(html,target){const href=`../${posix.dirname(target)}/`;return /<base\s/i.test(html)?html:html.replace(/<head(\s[^>]*)?>/i,m=>`${m}<base href="${href}">`)}
 async function walk(dir){for(const item of await readdir(dir,{withFileTypes:true})){const p=join(dir,item.name);if(item.isDirectory())await walk(p);else if(['.html','.js','.mjs'].includes(extname(item.name).toLowerCase()))await writeFile(p,rewrite(await readFile(p,'utf8')))}}
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
-await cp(join(root,'apps'),join(out,'apps'),{recursive:true});await cp(join(root,'src'),join(out,'src'),{recursive:true});await cp(join(root,'firebase-messaging-sw.js'),join(out,'firebase-messaging-sw.js'));
+await cp(join(root,'apps'),join(out,'apps'),{recursive:true});
+await cp(join(root,'apps/public-web/assets'),join(out,'assets'),{recursive:true});
+await cp(join(root,'src'),join(out,'src'),{recursive:true});await cp(join(root,'firebase-messaging-sw.js'),join(out,'firebase-messaging-sw.js'));
 await walk(join(out,'apps'));await walk(join(out,'src'));
 let home=rewrite(await readFile(join(root,'apps/public-web/index.html'),'utf8')).replace('href="./styles.css"','href="apps/public-web/styles.css"');await writeFile(join(out,'index.html'),home);
 for(const [route,target] of Object.entries(routes)){const dir=join(out,route);await mkdir(dir,{recursive:true});await writeFile(join(dir,'index.html'),addBase(rewrite(await readFile(join(root,target),'utf8')),target))}
