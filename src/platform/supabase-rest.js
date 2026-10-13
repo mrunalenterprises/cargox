@@ -18,17 +18,20 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
     return memorySession;
   }
   function accessToken(){return readSession()?.access_token||null}
-  function headers(extra={}){
+  function authHeaders(extra={}){
     const token=accessToken();
-    return {'apikey':key,'Authorization':`Bearer ${token||key}`,'Content-Type':'application/json',...extra};
+    return {'apikey':key,'Authorization':`Bearer ${token||key}`,...extra};
+  }
+  function headers(extra={}){return authHeaders({'Content-Type':'application/json',...extra})}
+  async function parseResponse(res){
+    const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+    if(!res.ok){const err=new Error(data?.message||data?.error_description||data?.error||`http_${res.status}`);err.status=res.status;err.data=data;throw err}
+    return data;
   }
   async function request(path,{method='GET',body,extraHeaders}={}){
     if(!configured)throw new Error('supabase_not_configured');
     const res=await fetchImpl(`${base}${path}`,{method,headers:headers(extraHeaders),body:body===undefined?undefined:JSON.stringify(body)});
-    const text=await res.text();
-    let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
-    if(!res.ok){const err=new Error(data?.message||data?.error_description||data?.error||`http_${res.status}`);err.status=res.status;err.data=data;throw err}
-    return data;
+    return parseResponse(res);
   }
   async function sendOtp(phone){return request('/auth/v1/otp',{method:'POST',body:{phone}})}
   async function verifyOtp({phone,token,type='sms'}){
@@ -53,5 +56,18 @@ export function createSupabaseRestClient({url,anonKey,fetchImpl=globalThis.fetch
   async function rpc(functionName,args={}){
     return request(`/rest/v1/rpc/${encodeURIComponent(functionName)}`,{method:'POST',body:args});
   }
-  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOutLocal,select,insert,update,rpc};
+  async function uploadObject(bucket,path,body,{contentType='application/octet-stream',upsert=false}={}){
+    if(!configured)throw new Error('supabase_not_configured');
+    if(!accessToken())throw new Error('login_required');
+    const safeBucket=encodeURIComponent(String(bucket||''));
+    const safePath=String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');
+    if(!safeBucket||!safePath)throw new Error('storage_path_required');
+    const res=await fetchImpl(`${base}/storage/v1/object/${safeBucket}/${safePath}`,{
+      method:'POST',
+      headers:authHeaders({'Content-Type':contentType,'x-upsert':upsert?'true':'false'}),
+      body
+    });
+    return parseResponse(res);
+  }
+  return {configured,readSession,saveSession,accessToken,sendOtp,verifyOtp,refreshSession,getUser,signOutLocal,select,insert,update,rpc,uploadObject};
 }
