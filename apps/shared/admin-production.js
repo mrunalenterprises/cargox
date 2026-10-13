@@ -5,6 +5,10 @@ const client=createSupabaseRestClient({url:cfg.supabaseUrl,anonKey:cfg.supabaseA
 
 export const adminProduction={
   configured:client.configured,
+  async liveMapSnapshot(){
+    if(!client.configured)return {role:'DEMO',cityCode:'CSN',trips:[],partners:[],alerts:[],demo:true};
+    return client.rpc('loadin_admin_live_map_snapshot');
+  },
   async payoutQueue(){
     if(!client.configured)return {role:'DEMO',cityCode:'CSN',requests:[],demo:true};
     return client.rpc('loadin_admin_payout_queue');
