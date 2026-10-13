@@ -25,6 +25,8 @@ begin
   if to_regclass('public.support_cases') is null then raise exception 'Missing public.support_cases'; end if;
   if to_regclass('public.trip_location_points') is null then raise exception 'Missing public.trip_location_points'; end if;
   if to_regclass('public.notifications') is null then raise exception 'Missing public.notifications'; end if;
+  if to_regclass('storage.objects') is null then raise exception 'Missing storage.objects'; end if;
+  if not exists(select 1 from storage.buckets where id='partner-documents' and public=false) then raise exception 'Missing private partner-documents bucket'; end if;
   if to_regprocedure('public.set_partner_availability(boolean,numeric,numeric,numeric)') is null then raise exception 'Missing set_partner_availability RPC'; end if;
   if to_regprocedure('public.get_my_dispatch_offers()') is null then raise exception 'Missing get_my_dispatch_offers RPC'; end if;
   if to_regprocedure('public.respond_to_dispatch_offer(uuid,text)') is null then raise exception 'Missing respond_to_dispatch_offer RPC'; end if;
@@ -41,6 +43,7 @@ begin
   if to_regprocedure('public.loadin_admin_set_city_service_status(text,text,text,text)') is null then raise exception 'Missing loadin_admin_set_city_service_status RPC'; end if;
   if to_regprocedure('public.loadin_fleet_snapshot()') is null then raise exception 'Missing loadin_fleet_snapshot RPC'; end if;
   if to_regprocedure('public.set_customer_booking_payment_mode(uuid,text)') is null then raise exception 'Missing set_customer_booking_payment_mode RPC'; end if;
+  if to_regprocedure('public.register_partner_document_upload(text,text,text,text,date,uuid)') is null then raise exception 'Missing register_partner_document_upload RPC'; end if;
 end
 $$;
 
@@ -65,6 +68,7 @@ begin
   if has_function_privilege('anon', 'public.loadin_admin_set_city_service_status(text,text,text,text)', 'EXECUTE') then raise exception 'anon can mutate city service'; end if;
   if has_function_privilege('anon', 'public.loadin_fleet_snapshot()', 'EXECUTE') then raise exception 'anon can execute fleet snapshot'; end if;
   if has_function_privilege('anon', 'public.set_customer_booking_payment_mode(uuid,text)', 'EXECUTE') then raise exception 'anon can set payment mode'; end if;
+  if has_function_privilege('anon', 'public.register_partner_document_upload(text,text,text,text,date,uuid)', 'EXECUTE') then raise exception 'anon can register partner document'; end if;
 
   select string_agg(p.proname, ', ' order by p.proname)
     into insecure
@@ -77,7 +81,8 @@ begin
       'open_customer_support_case','publish_partner_location','get_booking_tracking_snapshot',
       'mark_notification_opened','get_my_finance_summary','require_loadin_admin',
       'loadin_admin_dashboard_snapshot','loadin_admin_resolve_support_case',
-      'loadin_admin_set_city_service_status','loadin_fleet_snapshot','set_customer_booking_payment_mode'
+      'loadin_admin_set_city_service_status','loadin_fleet_snapshot','set_customer_booking_payment_mode',
+      'register_partner_document_upload'
     )
     and (
       not p.prosecdef
@@ -89,6 +94,17 @@ begin
 
   if insecure is not null then
     raise exception 'Auth-scoped RPC security configuration invalid: %', insecure;
+  end if;
+end
+$$;
+
+-- Storage policies must exist and remain user-prefix scoped.
+do $$
+begin
+  if (select count(*) from pg_policies where schemaname='storage' and tablename='objects' and policyname in (
+    'partner_upload_own_documents','partner_read_own_documents_storage','partner_replace_own_documents','partner_delete_own_documents'
+  )) <> 4 then
+    raise exception 'Partner document storage policies missing';
   end if;
 end
 $$;
