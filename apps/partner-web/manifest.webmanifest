@@ -1,0 +1,21 @@
+{
+  "name": "LOADIN Partner",
+  "short_name": "LOADIN Partner",
+  "description": "LOADIN Partner app for drivers, riders, helpers and vehicle owners.",
+  "id": "/partner/",
+  "start_url": "/partner/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d1d3b",
+  "theme_color": "#0d1d3b",
+  "categories": ["business", "navigation", "productivity"],
+  "icons": [
+    {
+      "src": "/apps/partner-web/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
