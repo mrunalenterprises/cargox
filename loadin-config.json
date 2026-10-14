@@ -1,0 +1,12 @@
+{
+  "supabaseUrl": "https://wnehhzzdpkzwtxaipgdv.supabase.co",
+  "supabaseAnonKey": "sb_publishable_bNvuThgSTbF-zHvyG3avIg_XCdwQ0zH",
+  "googleMapsApiKey": "",
+  "paymentProvider": "UNSET",
+  "paymentPublicKey": "",
+  "paymentApiBase": "",
+  "adminApiBase": "",
+  "firebaseConfig": null,
+  "firebaseVapidKey": "",
+  "firebaseSdkVersion": "10.14.1"
+}
