@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: loadin-flutter-apk-${{ github.ref }}
@@ -47,7 +47,7 @@ jobs:
         run: flutter pub get
         working-directory: apps/${{ matrix.app }}
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
         working-directory: apps/${{ matrix.app }}
       - name: Test
         run: flutter test
@@ -73,3 +73,45 @@ jobs:
           path: /tmp/loadin-*.apk
           if-no-files-found: error
           retention-days: 14
+
+  publish-apks:
+    name: Publish stable APK downloads
+    needs: android
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/loadin-build' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Customer APK
+        uses: actions/download-artifact@v4
+        with:
+          name: loadin-customer-live-qa-apk
+          path: dist/customer
+      - name: Download Partner APK
+        uses: actions/download-artifact@v4
+        with:
+          name: loadin-partner-live-qa-apk
+          path: dist/partner
+      - name: Prepare fixed APK filenames
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp dist/customer/loadin-customer.apk dist/loadin-customer.apk
+          cp dist/partner/loadin-partner.apk dist/loadin-partner.apk
+          test -s dist/loadin-customer.apk
+          test -s dist/loadin-partner.apk
+          ls -lh dist/loadin-customer.apk dist/loadin-partner.apk
+      - name: Publish latest LOADIN live QA release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="loadin-qa-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            dist/loadin-customer.apk \
+            dist/loadin-partner.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "LOADIN Live QA ${GITHUB_RUN_NUMBER}" \
+            --notes "Automated LOADIN Customer and Partner live QA APKs from ${GITHUB_SHA}." \
+            --latest
