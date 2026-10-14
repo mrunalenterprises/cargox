@@ -52,9 +52,10 @@ jobs:
       - name: Test
         run: flutter test
         working-directory: apps/${{ matrix.app }}
-      - name: Build live Android debug APK
+      - name: Build live Android debug APK with QA PIN login
         run: >-
           flutter build apk --debug
+          --target=lib/qa_main.dart
           --dart-define=LOADIN_SUPABASE_URL=${{ env.LOADIN_SUPABASE_URL }}
           --dart-define=LOADIN_SUPABASE_PUBLISHABLE_KEY=${{ env.LOADIN_SUPABASE_PUBLISHABLE_KEY }}
         working-directory: apps/${{ matrix.app }}
@@ -113,5 +114,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "LOADIN Live QA ${GITHUB_RUN_NUMBER}" \
-            --notes "Automated LOADIN Customer and Partner live QA APKs from ${GITHUB_SHA}." \
+            --notes "Automated LOADIN Customer and Partner live QA APKs with fixed QA PIN login from ${GITHUB_SHA}. Production OTP flow remains unchanged." \
             --latest
