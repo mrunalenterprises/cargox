@@ -1,0 +1,66 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/website", "destination": "/", "permanent": false },
+    { "source": "/auth", "destination": "/apps/auth-web/", "permanent": false },
+    { "source": "/customer", "destination": "/apps/customer-web/", "permanent": false },
+    { "source": "/customer-account", "destination": "/apps/customer-web/account.html", "permanent": false },
+    { "source": "/customer-notifications", "destination": "/apps/customer-web/notifications.html", "permanent": false },
+    { "source": "/customer-experience", "destination": "/apps/customer-web/experience.html", "permanent": false },
+    { "source": "/customer-checkout", "destination": "/apps/customer-web/checkout.html", "permanent": false },
+    { "source": "/customer-recurring", "destination": "/apps/customer-web/recurring.html", "permanent": false },
+    { "source": "/customer-business", "destination": "/apps/customer-web/business.html", "permanent": false },
+    { "source": "/customer-rewards", "destination": "/apps/customer-web/rewards.html", "permanent": false },
+    { "source": "/customer-reliability", "destination": "/apps/customer-web/reliability-cargo.html", "permanent": false },
+    { "source": "/customer-shifting", "destination": "/apps/customer-web/shifting-planner.html", "permanent": false },
+    { "source": "/partner", "destination": "/apps/partner-web/", "permanent": false },
+    { "source": "/partner-notifications", "destination": "/apps/partner-web/notifications.html", "permanent": false },
+    { "source": "/partner-readiness", "destination": "/apps/partner-web/readiness.html", "permanent": false },
+    { "source": "/partner-onboarding", "destination": "/apps/partner-web/onboarding.html", "permanent": false },
+    { "source": "/partner-documents", "destination": "/apps/partner-web/documents.html", "permanent": false },
+    { "source": "/partner-renewals", "destination": "/apps/partner-web/document-renewals.html", "permanent": false },
+    { "source": "/partner-special", "destination": "/apps/partner-web/special-jobs.html", "permanent": false },
+    { "source": "/partner-wallet", "destination": "/apps/partner-web/wallet.html", "permanent": false },
+    { "source": "/partner-quality", "destination": "/apps/partner-web/quality-demand.html", "permanent": false },
+    { "source": "/partner-plan", "destination": "/apps/partner-web/plan-center.html", "permanent": false },
+    { "source": "/admin", "destination": "/apps/admin-web/", "permanent": false },
+    { "source": "/admin-map", "destination": "/apps/admin-web/ops-map.html", "permanent": false },
+    { "source": "/admin-booking", "destination": "/apps/admin-web/booking-detail.html", "permanent": false },
+    { "source": "/admin-settings", "destination": "/apps/admin-web/ops-settings.html", "permanent": false },
+    { "source": "/admin-review", "destination": "/apps/admin-web/review-center.html", "permanent": false },
+    { "source": "/admin-documents", "destination": "/apps/admin-web/document-renewals.html", "permanent": false },
+    { "source": "/admin-finance", "destination": "/apps/admin-web/finance-center.html", "permanent": false },
+    { "source": "/admin-reconciliation", "destination": "/apps/admin-web/reconciliation.html", "permanent": false },
+    { "source": "/admin-safety", "destination": "/apps/admin-web/safety-center.html", "permanent": false },
+    { "source": "/admin-growth", "destination": "/apps/admin-web/growth-center.html", "permanent": false },
+    { "source": "/admin-support", "destination": "/apps/admin-web/support-center.html", "permanent": false },
+    { "source": "/admin-city-services", "destination": "/apps/admin-web/city-service-center.html", "permanent": false },
+    { "source": "/admin-staff", "destination": "/apps/admin-web/staff-audit.html", "permanent": false },
+    { "source": "/admin-readiness", "destination": "/apps/admin-web/production-readiness.html", "permanent": false },
+    { "source": "/admin-launch", "destination": "/apps/admin-web/launch-control.html", "permanent": false },
+    { "source": "/fleet", "destination": "/apps/fleet-web/", "permanent": false },
+    { "source": "/fleet-compliance", "destination": "/apps/fleet-web/compliance.html", "permanent": false },
+    { "source": "/fleet-reports", "destination": "/apps/fleet-web/reports-center.html", "permanent": false },
+    { "source": "/fleet-assignments", "destination": "/apps/fleet-web/assignment-planner.html", "permanent": false },
+    { "source": "/fleet-dispatch", "destination": "/apps/fleet-web/dispatch-board.html", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(self), geolocation=(self), microphone=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://maps.googleapis.com https://www.gstatic.com https://www.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://wnehhzzdpkzwtxaipgdv.supabase.co wss://wnehhzzdpkzwtxaipgdv.supabase.co https://*.googleapis.com https://fcm.googleapis.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" }
+      ]
+    },
+    {
+      "source": "/loadin-config.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ]
+}
